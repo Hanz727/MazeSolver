@@ -1,7 +1,9 @@
 #pragma once
 #include <math.h>
 
+#ifndef PI
 #define PI 3.14159265358979323846
+#endif 
 
 // Can't use <type_traits> on arduino IDE so gotta do this...
 // This can cause integer overflow crash, but the numbers are always smaller
