@@ -15,7 +15,7 @@ void setup() {
     
 }
 
-void update() {
+void loop() {
     // current pos is 0,0. Top Left
     // distance is 10 (half cell)
     // The direction is East, so we have a wall between (0,0) and (1,0)
