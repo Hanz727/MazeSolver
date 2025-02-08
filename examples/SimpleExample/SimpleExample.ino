@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <MazeSolver.h>
 
+
 MazeSolver gMazeSolver(
         1., // 1 cm wall width
         20., // 20 cm cell width
