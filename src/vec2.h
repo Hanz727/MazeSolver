@@ -7,13 +7,9 @@
 
 // Can't use <type_traits> on arduino IDE so gotta do this...
 // This can cause integer overflow crash, but the numbers are always smaller
-template <typename T, typename U>
-struct common_type {
-    using type = decltype(T() + U());
-};
 
 template <typename T, typename U>
-using common_type_t = typename common_type<T, U>::type;
+using common_type_t = decltype(T() + U()); 
 
 template <typename T>
 struct vec2 {
