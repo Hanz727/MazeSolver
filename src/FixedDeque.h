@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef DEBUG_PRINT_WINDOWS
+#ifdef DEBUG
     #include <iostream>
 #else
     #include <Arduino.h>

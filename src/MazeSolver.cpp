@@ -2,7 +2,7 @@
 #include "FixedDeque.h"
 #include <math.h>
 
-#ifdef DEBUG_PRINT_WINDOWS
+#ifdef DEBUG
 #include <iostream>
 #endif
 
@@ -219,7 +219,7 @@ directions MazeSolver::getPossibleMoves() const {
 
 
 void MazeSolver::printWalls() const {
-#ifdef DEBUG_PRINT_WINDOWS
+#ifdef DEBUG
     for (int y = 0; y < m_MazeHeightEx; y++) {
         for (int x = 0; x < m_MazeWidthEx; x++) {
             std::cout << (int)(m_wallMatrix[x][y]) << " ";
@@ -230,7 +230,7 @@ void MazeSolver::printWalls() const {
 }
 
 void MazeSolver::printDists() const {
-#ifdef DEBUG_PRINT_WINDOWS
+#ifdef DEBUG
     for (int y = 0; y < m_MazeHeight; y++) {
         for (int x = 0; x < m_MazeWidth; x++) {
             std::cout << (int)(m_distanceMatrix[x][y]) << " ";
