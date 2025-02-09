@@ -6,8 +6,6 @@
 //#endif 
 
 // Can't use <type_traits> on arduino IDE so gotta do this...
-// This can cause integer overflow crash, but the numbers are always smaller
-
 template <typename T, typename U>
 using common_type_t = decltype(T() + U()); 
 
