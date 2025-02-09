@@ -1,5 +1,7 @@
 #include "MazeSolver.h"
 #include "FixedDeque.h"
+
+#include <cstdint>
 #include <math.h>
 
 #ifdef DEBUG
@@ -52,6 +54,37 @@ void MazeSolver::clearWallMatrix() {
     }
 }
 
+
+
+void MazeSolver::setMovePriority(const moves priority[4]) {
+    for (int i = 0; i < 4; i++) {
+        m_movePriority[i] = priority[i];
+    }
+}
+
+uint8_t* MazeSolver::getMovesOrder(moves _moves, uint8_t* size) const {
+    uint8_t* order = new uint8_t[4]();
+    *size = 0;
+
+    for (int i = 0; i < 4; i++) {
+        if (_moves & (1 << i))
+            order[(*size)++] = i;
+    }
+
+    // Sort moves according to priority
+    for (int i = 0; i < *size; i++) {
+        for (int j = i + 1; j < *size; j++) {
+            if (m_movePriority[order[i]] > m_movePriority[order[j]]) {
+                // swap
+                uint8_t temp = order[i];
+                order[i] = order[j];
+                order[j] = temp;
+            }
+        }
+    }
+
+    return order;
+}
 
 vec2<double> MazeSolver::posToCm(const vec2<double>& pos) const {
     return vec2<double>(
@@ -172,13 +205,16 @@ vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
 
 vec2<int> MazeSolver::getNextMove() const {
     static vec2<int> lastMove = roundPos(m_currPos);
-    directions dirs = getPossibleMoves();
+    moves _moves = getPossibleMoves();
+
+    uint8_t orderSize;
+    uint8_t* order = getMovesOrder(_moves, &orderSize); 
 
     vec2<int> bestMove{ -1 };
     int bestDist = 9999;
-
-    for (int i = 0; i < 4; i++) {
-        int8_t dir = dirs & (1 << i);
+    
+    for (int i = 0; i < orderSize; i++) {
+        moves dir = _moves & (1 << order[i]);
         if (!dir)
             continue;
 
@@ -193,19 +229,23 @@ vec2<int> MazeSolver::getNextMove() const {
             bestDist = dist;
             bestMove = newPos;
         }
-        // TODO: add priority path switching between east, west and north, south
     }
 
     // Check previous move as last
     if (m_distanceMatrix[lastMove.x][lastMove.y] < bestDist)
         bestMove = lastMove;
 
+    // free memory
+    delete[] order;
+    
+    // TODO: check if this isn't broken
     lastMove = bestMove;
+
     return bestMove;
 }
 
-directions MazeSolver::getPossibleMoves() const {
-    directions out = 0;
+moves MazeSolver::getPossibleMoves() const {
+    moves out = 0;
     for (int i = 0; i < 4; i++) {
         vec2<int> wallPos = posToPosEx(m_currPos) + m_directions[i];
         if (m_wallMatrix[wallPos.x][wallPos.y] == 1)

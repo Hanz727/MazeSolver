@@ -5,7 +5,7 @@
 // Max maze size is fixed on 32 by 32
 using matrix2d = int8_t[32][32];
 using matrix2dEx = int8_t[65][65];
-using directions = int8_t;
+using moves = uint8_t;
 
 enum CompassDir : int8_t {
     North = (1 << 0),
@@ -40,9 +40,18 @@ private:
         {-1, 0}  // W
     };
 
+    // Priority, Lower number = higher priority
+    moves m_movePriority[4] = {
+        1, // N
+        3, // S
+        2, // E
+        0, // W
+    };
+
     void clearDistanceMatrix();
     void clearWallMatrix();
 
+    uint8_t* getMovesOrder(moves _moves, uint8_t* size) const;
 public:
     MazeSolver(const double wallWidth,
         const double cellWidth,
@@ -54,7 +63,9 @@ public:
     );
 
     ~MazeSolver() = default;
-
+    
+    void setMovePriority(const moves priority[4]);
+    
     const vec2<int> m_startPos;
     const vec2<int> m_endPos;
     vec2<double> m_currPos;
@@ -72,7 +83,7 @@ public:
 
     vec2<int> getDirOffset(const CompassDir dir) const;
     vec2<int> getNextMove() const;
-    directions getPossibleMoves() const;
+    moves getPossibleMoves() const;
 
     void printWalls() const;
     void printDists() const;
