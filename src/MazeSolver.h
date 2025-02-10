@@ -7,7 +7,7 @@ using matrix2d = int8_t[32][32];
 using matrix2dEx = int8_t[65][65];
 using moves = uint8_t;
 
-enum CompassDir : int8_t {
+enum CompassDir : uint8_t {
     North = (1 << 0),
     South = (1 << 1),
     East = (1 << 2),
@@ -31,6 +31,7 @@ private:
     const uint8_t m_MazeHeightEx;
 
     matrix2d m_distanceMatrix{};
+    matrix2d m_visitedMatrix{};
     matrix2dEx m_wallMatrix{};
 
     const vec2<int8_t> m_directions[4] = {
@@ -48,6 +49,10 @@ private:
         0, // W
     };
 
+    const vec2<int> m_startPos;
+    const vec2<int> m_endPos;
+    vec2<double> m_currPos;
+    
     void clearDistanceMatrix();
     void clearWallMatrix();
 
@@ -65,10 +70,11 @@ public:
     ~MazeSolver() = default;
     
     void setMovePriority(const moves priority[4]);
+    void setCurrPos(const vec2<double>& pos);
     
-    const vec2<int> m_startPos;
-    const vec2<int> m_endPos;
-    vec2<double> m_currPos;
+    const vec2<int>& getStartPos() const; 
+    const vec2<double>& getCurrPos() const; 
+    const vec2<int>& getEndPos() const; 
 
     vec2<double> posToCm(const vec2<double>& pos) const;
     vec2<double> cmToPos(const vec2<double>& cm) const;
