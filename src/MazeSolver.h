@@ -53,7 +53,7 @@ private:
     const vec2<int> m_endPos;
     vec2<double> m_currPos;
     
-    bool m_preferVisited = false;
+    bool m_explorationMode = true;
 
     void clearDistanceMatrix();
     void clearWallMatrix();
@@ -73,7 +73,7 @@ public:
     ~MazeSolver() = default;
     
     void setMovePriority(const moves priority[4]);
-    void setPreferVisited(bool toggle);
+    void setExplorationMode(bool toggle);
     void setCurrPos(const vec2<double>& pos);
     
     const vec2<int>& getStartPos() const; 

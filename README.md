@@ -49,10 +49,17 @@ vec2<int> nextMove = mazeSolver.getNextMove();
 
 - It is very important that at the time of calling ```markWall()``` function, the car is parallel to maze walls. 
 If the car is at an angle, don't call the function and wait until it's fully rotated.
-- The distance provided to ```markWall()``` function can deviate by ±(1/4)*(cellWidth-wallWidth).
-- The distance provided to ```markWall()``` has to be from center of the car, not from the sensor.
+- The distance provided to ```markWall()``` function can deviate by 
+±(1/4)*(cellWidth-wallWidth).
+- The distance provided to ```markWall()``` has to be from center of the car, 
+not from the sensor.
 - The (0,0) pos is top left of the maze
 - North is y = 0
 - West is x = 0
-- There also is a ```markWall()``` function that supports an angle instead of CompassDir, it can be used for angled sensors or
-detecting walls while turning.
+- There also is a ```markWall()``` function that supports an angle instead of CompassDir, 
+it can be used for angled sensors or detecting walls while turning.
+- Once a maze has been solved, ```getNextMove() == getEndPos()```, use ```floodFill(mazeSolver.getStartPos())```
+to return back to the start point.
+- After solving the maze and returning to the start point, use ```setExplorationMode(false)```
+to only follow visited paths.
+

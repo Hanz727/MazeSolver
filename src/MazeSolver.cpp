@@ -120,8 +120,8 @@ vec2<double> MazeSolver::posExToPos(const vec2<int>& posEx) const {
     );
 }
 
-void MazeSolver::setPreferVisited(bool toggle) {
-    m_preferVisited = toggle;
+void MazeSolver::setExplorationMode(bool toggle) {
+    m_explorationMode = toggle;
 }
 
 void MazeSolver::setCurrPos(const vec2<double>& pos) {
@@ -248,8 +248,10 @@ vec2<int> MazeSolver::getNextMove() const {
 
         int dist = m_distanceMatrix[newPos.x][newPos.y];
         
-        // TODO: implement preferVisited
         bool visited = m_visitedMatrix[newPos.x][newPos.y]; 
+        if (!m_explorationMode && !visited)
+            continue; 
+
         if (dist < bestDist) {
             bestDist = dist;
             bestMove = newPos;
