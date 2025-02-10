@@ -61,6 +61,7 @@ private:
     uint8_t* getMovesOrder(moves _moves, uint8_t* size) const;
     
 public:
+    
     MazeSolver(const double wallWidth,
         const double cellWidth,
         const double cellHeight,

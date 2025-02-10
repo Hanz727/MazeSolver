@@ -9,14 +9,14 @@ int main() {
 		10,
 		10,
 		{ 0,0 },
-		{ 1,0 }
+		{ 9,9 }
 	);
 
    	mazeSolver.markWall({ 0,0 }, 10, CompassDir::East);
 	mazeSolver.floodFill(mazeSolver.getEndPos());
 	vec2<int> nm = mazeSolver.getNextMove();
     
-    std::cout << nm.x << " " << nm.y << "\n";
     mazeSolver.printDists();
     mazeSolver.printWalls();
+    std::cout << nm.x << " " << nm.y << "\n";
 }

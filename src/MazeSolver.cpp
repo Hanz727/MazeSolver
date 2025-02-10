@@ -6,6 +6,7 @@
 
 #ifdef DEBUG
 #include <iostream>
+#include <iomanip>
 #endif
 
 MazeSolver::MazeSolver(
@@ -126,6 +127,8 @@ void MazeSolver::setExplorationMode(bool toggle) {
 
 void MazeSolver::setCurrPos(const vec2<double>& pos) {
     m_currPos = pos;
+    vec2<int> posR = roundPos(pos);
+    m_visitedMatrix[posR.x][posR.y] = 1;
 }
 
 const vec2<int>& MazeSolver::getStartPos() const {
@@ -289,10 +292,40 @@ void MazeSolver::printWalls() const {
 #ifdef DEBUG
     for (int y = 0; y < m_MazeHeightEx; y++) {
         for (int x = 0; x < m_MazeWidthEx; x++) {
-            std::cout << (int)(m_wallMatrix[x][y]) << " ";
+            // part of normal grid
+            if (x % 2 != 0 && y % 2 != 0) {
+                vec2<int> pos = posExToPos({x,y});
+                if (m_visitedMatrix[pos.x][pos.y]) {
+                    std::cout << "+ ";
+                    continue;
+                }
+
+                if (m_distanceMatrix[pos.x][pos.y] == -1) {
+                    std::cout << "X ";
+                    continue;
+                }
+
+                std::cout << "~ ";
+                continue;
+            }
+            
+            if (m_wallMatrix[x][y]) {
+                std::cout << "# ";
+                continue;
+            }
+
+
+            if (x % 2 == 0 && y % 2 == 0) {
+                std::cout << ". ";
+                continue;
+            }
+
+            std::cout << "  ";
+            
         }
         std::cout << "\n";
     }
+    std::cout << "LEGEND: #: Wall, ~: Accesible, X: Inaccesible, +: Visited\n";
 #endif
 }
 
@@ -300,7 +333,7 @@ void MazeSolver::printDists() const {
 #ifdef DEBUG
     for (int y = 0; y < m_MazeHeight; y++) {
         for (int x = 0; x < m_MazeWidth; x++) {
-            std::cout << (int)(m_distanceMatrix[x][y]) << " ";
+            std::cout << std::setw(3) << (int)(m_distanceMatrix[x][y]) << " ";
         }
         std::cout << "\n";
     }
