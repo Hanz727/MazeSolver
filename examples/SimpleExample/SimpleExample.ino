@@ -29,7 +29,7 @@ void loop() {
     
     // Recompute a distance matrix for floodfill with the new wall data.
     // destination is endpos
-    gMazeSolver.floodFill(gMazeSolver.m_endPos);
+    gMazeSolver.floodFill(gMazeSolver.getEndPos());
     
     // In this case we have a wall left and right so only next position can be (0,1)
     // Meaning 1 down.
