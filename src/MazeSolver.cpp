@@ -27,6 +27,8 @@ MazeSolver::MazeSolver(
     m_MazeWidthEx(mazeWidth * 2 + 1),
     m_MazeHeightEx(mazeHeight * 2 + 1)
 {
+    m_currPos = m_startPos;
+
     clearDistanceMatrix();
     clearWallMatrix();
 }
@@ -70,7 +72,7 @@ uint8_t* MazeSolver::getMovesOrder(moves _moves, uint8_t* size) const {
         if (_moves & (1 << i))
             order[(*size)++] = i;
     }
-
+    
     // Sort moves according to priority
     for (int i = 0; i < *size; i++) {
         for (int j = i + 1; j < *size; j++) {
@@ -118,6 +120,25 @@ vec2<double> MazeSolver::posExToPos(const vec2<int>& posEx) const {
     );
 }
 
+void MazeSolver::setPreferVisited(bool toggle) {
+    m_preferVisited = toggle;
+}
+
+void MazeSolver::setCurrPos(const vec2<double>& pos) {
+    m_currPos = pos;
+}
+
+const vec2<int>& MazeSolver::getStartPos() const {
+    return m_startPos;
+} 
+
+const vec2<int>& MazeSolver::getEndPos() const {
+    return m_endPos;
+}
+
+const vec2<double>& MazeSolver::getCurrPos() const {
+    return m_currPos;
+} 
 
 // Parameters:
 // - pos: The current position in the maze grid, represented as a vec2<double>. The more precise the position the better.
@@ -126,8 +147,10 @@ vec2<double> MazeSolver::posExToPos(const vec2<int>& posEx) const {
 // - dir: The direction from the current position in which the wall is located, 
 //   represented by the CompassDir enum (e.g., North, South, East, West). Where north goes towards y = 0 and West goes to x = 0
 void MazeSolver::markWall(const vec2 <double>& pos, const double distance, const CompassDir dir) {
-    // update latest pos
-    m_currPos = pos;
+    setCurrPos(pos);
+
+    vec2<int> m_currPosR = roundPos(m_currPos);
+    m_visitedMatrix[m_currPosR.x][m_currPosR.y] = 1;
 
     vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance, distance }*getDirOffset(dir));
     vec2<int> wallPosEx = posToPosEx(cmToPos(wallPosCm));
@@ -135,8 +158,6 @@ void MazeSolver::markWall(const vec2 <double>& pos, const double distance, const
     // walls are only on even spots
     if (!(wallPosEx.x % 2 == 0 || wallPosEx.y % 2 == 0))
         return;
-
-    //std::cout << wallPosEx.x << " " << wallPosEx.y << "\n";
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
 }
@@ -148,7 +169,10 @@ void MazeSolver::markWall(const vec2 <double>& pos, const double distance, const
 // - angleRad: The compass angle from the center of the car, 0 is North, 1/2pi is East, pi is South, 3/2pi is West. 
 //             The angle is not relative to the car!
 void MazeSolver::markWall(const vec2<double>& pos, const double distance, const double angleRad) {
-    m_currPos = pos;
+    setCurrPos(pos);
+
+    vec2<int> m_currPosR = roundPos(pos);
+    m_visitedMatrix[m_currPosR.x][m_currPosR.y] = 1;
 
     vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance*sin(angleRad), distance*cos(angleRad) });
     vec2<int> wallPosEx = posToPosEx(cmToPos(wallPosCm));
@@ -156,8 +180,6 @@ void MazeSolver::markWall(const vec2<double>& pos, const double distance, const 
     // walls are only on even spots
     if (!(wallPosEx.x % 2 == 0 || wallPosEx.y % 2 == 0))
         return;
-
-    //std::cout << wallPosEx.x << " " << wallPosEx.y << "\n";
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
 
@@ -225,6 +247,9 @@ vec2<int> MazeSolver::getNextMove() const {
             continue;
 
         int dist = m_distanceMatrix[newPos.x][newPos.y];
+        
+        // TODO: implement preferVisited
+        bool visited = m_visitedMatrix[newPos.x][newPos.y]; 
         if (dist < bestDist) {
             bestDist = dist;
             bestMove = newPos;

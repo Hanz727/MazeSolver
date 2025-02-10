@@ -39,7 +39,7 @@ mazeSolver.markWall({ 0,0 }, 10, CompassDir::East);
 mazeSolver.markWall({ 0,0 }, 10, CompassDir::West);
 mazeSolver.markWall({ 0,0 }, 32, CompassDir::South);
 
-mazeSolver.floodFill(mazeSolver.m_endPos);
+mazeSolver.floodFill(mazeSolver.getEndPos());
 vec2<int> nextMove = mazeSolver.getNextMove();
 
 // now use mazeSolver.m_currPos and nextMove to decide on the next course of action.
