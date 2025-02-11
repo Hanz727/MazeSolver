@@ -81,14 +81,17 @@ void MazeSolver::clearWallMatrix() {
 }
 
 
+vec2<int> MazeSolver::projectPos(const vec2<double>& pos, const double distance, const double angleRad) const {
+    return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*sin(angleRad), distance*cos(angleRad)}));
+}
 
-void MazeSolver::setMovePriority(const moves priority[4]) {
+void MazeSolver::setMovePriority(const moves_t priority[4]) {
     for (int i = 0; i < 4; i++) {
         m_movePriority[i] = priority[i];
     }
 }
 
-uint8_t* MazeSolver::getMovesOrder(moves _moves, uint8_t* size) const {
+uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size) const {
     uint8_t* order = new uint8_t[4]();
     *size = 0;
 
@@ -175,9 +178,6 @@ const vec2<double>& MazeSolver::getCurrPos() const {
 void MazeSolver::markWall(const vec2 <double>& pos, const double distance, const CompassDir dir) {
     setCurrPos(pos);
 
-    vec2<int> m_currPosR = roundPos(m_currPos);
-    m_visitedMatrix[m_currPosR.x][m_currPosR.y] = 1;
-
     vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance, distance }*getDirOffset(dir));
     vec2<int> wallPosEx = posToPosEx(cmToPos(wallPosCm));
 
@@ -196,9 +196,6 @@ void MazeSolver::markWall(const vec2 <double>& pos, const double distance, const
 //             The angle is not relative to the car!
 void MazeSolver::markWall(const vec2<double>& pos, const double distance, const double angleRad) {
     setCurrPos(pos);
-
-    vec2<int> m_currPosR = roundPos(pos);
-    m_visitedMatrix[m_currPosR.x][m_currPosR.y] = 1;
 
     vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance*sin(angleRad), distance*cos(angleRad) });
     vec2<int> wallPosEx = posToPosEx(cmToPos(wallPosCm));
@@ -253,7 +250,7 @@ vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
 
 vec2<int> MazeSolver::getNextMove() const {
     static vec2<int> lastMove = roundPos(m_currPos);
-    moves _moves = getPossibleMoves();
+    moves_t _moves = getPossibleMoves();
 
     uint8_t orderSize;
     uint8_t* order = getMovesOrder(_moves, &orderSize); 
@@ -262,7 +259,7 @@ vec2<int> MazeSolver::getNextMove() const {
     int bestDist = 9999;
     
     for (int i = 0; i < orderSize; i++) {
-        moves dir = _moves & (1 << order[i]);
+        moves_t dir = _moves & (1 << order[i]);
         if (!dir)
             continue;
 
@@ -297,8 +294,8 @@ vec2<int> MazeSolver::getNextMove() const {
     return bestMove;
 }
 
-moves MazeSolver::getPossibleMoves() const {
-    moves out = 0;
+moves_t MazeSolver::getPossibleMoves() const {
+    moves_t out = 0;
     for (int i = 0; i < 4; i++) {
         vec2<int> wallPos = posToPosEx(m_currPos) + m_directions[i];
         if (m_wallMatrix[wallPos.x][wallPos.y] == 1)
