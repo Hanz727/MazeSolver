@@ -1,6 +1,9 @@
 #pragma once
 #include "vec2.h"
-#include <stdint.h>
+
+#if defined(__has_include) && __has_include(<stdint.h>)
+    #include <stdint.h>
+#endif
 
 // Max maze size is fixed on 32 by 32
 using matrix2d = int8_t[32][32];

@@ -15,7 +15,7 @@ int main() {
 	);
 
    	mazeSolver.markWall({ 0,0 }, 10, CompassDir::East);
-	mazeSolver.floodFill(mazeSolver.getEndPos());
+	mazeSolver.floodFill({1,0});
 	vec2<int> nm = mazeSolver.getNextMove();
     
     mazeSolver.printDists();

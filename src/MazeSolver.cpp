@@ -1,7 +1,6 @@
 #include "MazeSolver.h"
 #include "FixedDeque.h"
 
-#include <cstdint>
 #include <math.h>
 
 #ifdef DEBUG
