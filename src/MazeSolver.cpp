@@ -17,18 +17,42 @@ MazeSolver::MazeSolver(
     const uint8_t mazeHeight,
     const vec2<int> startPos,
     const vec2<int> endPos
-) :
-    m_wallWidth(wallWidth),
-    m_cellWidth(cellWidth),
-    m_cellHeight(cellHeight),
-    m_MazeWidth(mazeWidth),
-    m_MazeHeight(mazeHeight),
-    m_startPos(startPos),
-    m_endPos(endPos),
-    m_MazeWidthEx(mazeWidth * 2 + 1),
-    m_MazeHeightEx(mazeHeight * 2 + 1)
+)
 {
     m_currPos = m_startPos;
+
+    init(
+        wallWidth,
+        cellWidth,
+        cellHeight,
+        mazeWidth,
+        mazeHeight,
+        startPos,
+        endPos
+    );
+
+}
+
+void MazeSolver::init(
+        const double wallWidth,
+        const double cellWidth,
+        const double cellHeight,
+        const uint8_t mazeWidth,
+        const uint8_t mazeHeight,
+        const vec2<int> startPos,
+        const vec2<int> endPos
+) {
+
+    m_wallWidth = wallWidth;
+    m_cellWidth = cellWidth;
+    m_cellHeight = cellHeight;
+    m_MazeWidth = mazeWidth;
+    m_MazeHeight = mazeHeight;
+    m_startPos = startPos;
+    m_endPos = endPos;
+    
+    m_MazeHeightEx = mazeHeight * 2 + 1;
+    m_MazeWidthEx = mazeHeight * 2 + 1;
 
     clearDistanceMatrix();
     clearWallMatrix();

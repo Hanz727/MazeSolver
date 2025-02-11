@@ -1,8 +1,10 @@
 #include "../src/MazeSolver.h"
 #include <iostream>
 
+MazeSolver mazeSolver;
+
 int main() {
-	MazeSolver mazeSolver(
+	mazeSolver.init(
 		1.,
 		20.,
 		20.,

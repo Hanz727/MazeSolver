@@ -21,14 +21,14 @@ struct FloodFillNode {
 
 class MazeSolver {
 private:
-    const double m_wallWidth;
-    const double m_cellWidth;
-    const double m_cellHeight;
+    double m_wallWidth;
+    double m_cellWidth;
+    double m_cellHeight;
 
-    const uint8_t m_MazeWidth;
-    const uint8_t m_MazeHeight;
-    const uint8_t m_MazeWidthEx;
-    const uint8_t m_MazeHeightEx;
+    uint8_t m_MazeWidth;
+    uint8_t m_MazeHeight;
+    uint8_t m_MazeWidthEx;
+    uint8_t m_MazeHeightEx;
 
     matrix2d m_distanceMatrix{};
     matrix2d m_visitedMatrix{};
@@ -49,8 +49,8 @@ private:
         0, // W
     };
 
-    const vec2<int> m_startPos;
-    const vec2<int> m_endPos;
+    vec2<int> m_startPos;
+    vec2<int> m_endPos;
     vec2<double> m_currPos;
     
     bool m_explorationMode = true;
@@ -71,8 +71,19 @@ public:
         const vec2<int> endPos
     );
 
-    ~MazeSolver() = default;
+    MazeSolver() = default;
     
+    ~MazeSolver() = default;
+   
+    void init(const double wallWidth,
+        const double cellWidth,
+        const double cellHeight,
+        const uint8_t mazeWidth,
+        const uint8_t mazeHeight,
+        const vec2<int> startPos,
+        const vec2<int> endPos
+    );
+
     void setMovePriority(const moves priority[4]);
     void setExplorationMode(bool toggle);
     void setCurrPos(const vec2<double>& pos);
