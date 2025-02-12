@@ -129,7 +129,63 @@ position always has the lowest priority to avoid going back and fourth. <br>
 The adjescent cell is returned as a grid vec2<int>
 where top left cell is (0,0)
 
-## Custom types
+___
+### setExplorationMode 
+setExplorationMode - change the current explorationMode, true by default. 
+
+### C Specification
+```c
+void setExplorationMode(bool toggle);
+```
+
+### Parameters
+
+***toggle*** <br> 
+    &nbsp;&nbsp;&nbsp;&nbsp;New value of ```m_explorationMode``` <br>
+
+
+### Description
+The exploration mode dictates whether the [getNextMove](#getNextMove)
+function will ignore non visited cells.
+When ```m_explorationMode``` is true, [getNextMove](#getNextMove)
+can return any cell, ignoring ```m_visitedMatrix```. <br>
+
+The main use case for this function is to turn off the exploration mode
+when you want to set the best time with current maze knowledge 
+without taking any risks.
+
+___
+### projectPos 
+projectPos - projects polar coordinates on the grid and returns the closest position.
+
+### C Specification
+
+```cpp
+vec2<int> projectPos(const vec2<double>& pos, 
+                     const double distance, 
+                     const double angleRad);
+```
+
+### Parameters
+
+***pos*** <br> 
+    &nbsp;&nbsp;&nbsp;&nbsp;Position from which the distance is measured.<br>
+***distance*** <br> 
+    &nbsp;&nbsp;&nbsp;&nbsp;Distance in centimeters. <br>
+***angleRad*** <br> 
+    &nbsp;&nbsp;&nbsp;&nbsp;Absolute angle in radians from the sensor position.
+    This angle is not relative to the car, but to the maze where North is 0 and South is PI<br>
+
+### Description
+
+```projectPos``` can be used to calculate the position of another car
+or a signal in the maze using polar coordinates.
+If you know that something is 30 degrees right of the car, 
+the orientation of the car and the distance to it, you can calculate
+its position.
+
+
+## Custom structures
 
 ### Enum CompassDir
 CompassDir - A compass direction North, South, East or West.
@@ -164,9 +220,4 @@ For example:
 getDirOffset((1 << 0)); // returns vec2<int>{0, -1}
 getDirOffset(South);    // returns vec2<int>{0, 1}
 ```
-
-___
-
- After solving the maze and returning to the start point, use ```setExplorationMode(false)```
-to only follow visited paths.
 
