@@ -78,7 +78,7 @@ void markWall(const vec2<double>& pos,
 
 `markWall` stores the existance of a wall for later calculations with [floodFill](#floodFill).
 This function has to be called at least once when roughly in the center of a cell for each sensor.
-It can be called from all possible positions of a cell given the direction/angleRad is correct.
+It can be called from all possible positions of a cell.
 Do not use this function while turning if you aren't sure whether the angleRad is correct at that very moment. <br>
 
 The tolerance of distance is approximately ±1/4(cellWidth-wallWidth), this tolerance is higher in the positive direction by wallWidth,
