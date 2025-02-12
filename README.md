@@ -84,7 +84,7 @@ Do not use this function while turning if you aren't sure whether the angleRad i
 The tolerance of distance is approximately ±1/4(cellWidth-wallWidth), this tolerance is higher in the positive direction by wallWidth,
 but keep the measurements within the minimum tolerance value.
 
-
+___
 ### floodFill 
 floodFill - recalculate the ```m_distanceMatrix``` with the floodfill algorithm. 
 
