@@ -103,14 +103,14 @@ public:
     vec2<double> posExToPos(const vec2<int>& posEx) const;
 
     void markWall(const vec2<double>& pos, const double distance, const CompassDir dir);
-    void markWall(const vec2<double>& pos, const double distance, const double angle);
+    void markWall(const vec2<double>& pos, const double distance, const double angleRad);
     void floodFill(const vec2<int>& destination);
 
     vec2<int> getDirOffset(const CompassDir dir) const;
     vec2<int> getNextMove() const;
     moves_t getPossibleMoves() const;
     
-    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angle) const;
+    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angleRad) const;
 
     void printWalls() const;
     void printDists() const;
