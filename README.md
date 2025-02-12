@@ -45,7 +45,6 @@ MazeSolver mazeSolver(
 
 ## Important functions
 
-___
 
 ### markWall
 markWall - mark a detected wall on the ```m_wallMatrix```.
@@ -85,7 +84,6 @@ Do not use this function while turning if you aren't sure whether the angleRad i
 The tolerance of distance is approximately ±1/4(cellWidth-wallWidth), this tolerance is higher in the positive direction by wallWidth,
 but keep the measurements within the minimum tolerance value.
 
-___
 
 ### floodFill 
 floodFill - recalculate the ```m_distanceMatrix``` with the floodfill algorithm. 
@@ -107,11 +105,9 @@ if there is a wall blocking the direct path. [getNextMove](#getNextMove) functio
 
 Whenever using this function you first [markWall](#markWall) to ensure you have all the needed data before running the algorithm.
 This function is usually followed by [getNextMove](#getNextMove) to navigate towards destination.
-___
 
 ### getNextMove() 
 (WIP)
-___
 
 
 
