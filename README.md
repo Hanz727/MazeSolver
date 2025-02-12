@@ -106,11 +106,28 @@ if there is a wall blocking the direct path. [getNextMove](#getNextMove) functio
 Whenever using this function you first [markWall](#markWall) to ensure you have all the needed data before running the algorithm.
 This function is usually followed by [getNextMove](#getNextMove) to navigate towards destination.
 
-### getNextMove() 
-(WIP)
+___
 
+### getNextMove 
+getNextMove - Gives the adjecent cell of current position with lowest
+distance to destination complying with ```m_movePriority```.
 
+### C Specification
 
+```c
+vec2<int> getNextMove();
+```
+
+### Description
+
+```getNextMove``` returns a adjecent cell to ```m_currPos``` with
+the lowest distance to destination provided to [floodFill](#floodFill).
+If there are multiple adjecent cells with equal distance to the 
+destination, then ```m_movePriority``` is followed. The previous
+position always has the lowest priority to avoid going back and fourth. <br>
+
+The adjescent cell is returned as a grid vec2<int>
+where top left cell is (0,0)
 
 ## Custom types
 
@@ -129,38 +146,27 @@ enum CompassDir : uint8_t {
 ```
 
 ### Description
-(WIP)
+
+A listing of directions where North faces y = 0 and West faces x = 0.
+This enum is used by ```getPossibleMoves``` to return multiple
+possible moves without creating a vec2 array. For example:
+```c
+moves_t possibleMoves = North | South;
+```
+This becomes 0b0011 and represents that you can go North and South,
+but not East or West.
+
+You can translate a single compassDir to its offset 
+with ```getDirOffset```.
+
+For example:
+```c
+getDirOffset((1 << 0)); // returns vec2<int>{0, -1}
+getDirOffset(South);    // returns vec2<int>{0, 1}
+```
 
 ___
 
-Example code:
-```c
-// Assuming 3 sensors
-mazeSolver.markWall({ 0,0 }, 10, CompassDir::East);
-mazeSolver.markWall({ 0,0 }, 10, CompassDir::West);
-mazeSolver.markWall({ 0,0 }, 32, CompassDir::South);
-
-mazeSolver.floodFill(mazeSolver.getEndPos());
-vec2<int> nextMove = mazeSolver.getNextMove();
-
-// now use mazeSolver.m_currPos and nextMove to decide on the next course of action.
-```
-
-### Remarks
-
-- It is very important that at the time of calling ```markWall()``` function, the car is parallel to maze walls. 
-If the car is at an angle, don't call the function and wait until it's fully rotated.
-- The distance provided to ```markWall()``` function can deviate by 
-±(1/4)*(cellWidth-wallWidth).
-- The distance provided to ```markWall()``` has to be from center of the car, 
-not from the sensor.
-- The (0,0) pos is top left of the maze
-- North is y = 0
-- West is x = 0
-- There also is a ```markWall()``` function that supports an angle instead of CompassDir, 
-it can be used for angled sensors or detecting walls while turning.
-- Once a maze has been solved, ```getNextMove() == getEndPos()```, use ```floodFill(mazeSolver.getStartPos())```
-to return back to the start point.
-- After solving the maze and returning to the start point, use ```setExplorationMode(false)```
+ After solving the maze and returning to the start point, use ```setExplorationMode(false)```
 to only follow visited paths.
 
