@@ -78,6 +78,8 @@ private:
     
     void floodFill(FixedDeque<FloodFillNode>& queue);
     void floodFillBlind();
+
+    bool findBounds();
 public:
     
     MazeSolver(const double wallWidth,
@@ -126,7 +128,7 @@ public:
     void floodFill(const vec2<int>& destination);
 
     vec2<int> getDirOffset(const CompassDir dir) const;
-    vec2<int> getNextMove(const double carBearing = 0.) const;
+    vec2<int> getNextMove(const double carBearing = 0.);
     moves_t getPossibleMoves() const;
     
     vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angle) const;

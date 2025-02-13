@@ -313,7 +313,7 @@ void MazeSolver::floodFillBlind() {
             if (y == m_bottomRight.y) {
                 // Check down
                 if (m_wallMatrix[posEx.x][posEx.y + 1] != 1) 
-                    continue;
+            continue;
 
                 queue.push_back({{x,y}, 0});
                 m_distanceMatrix[x][y] = 0;
@@ -350,12 +350,51 @@ CompassDir MazeSolver::radiansToDirection(double angleRad) const {
     return West;
 }
 
-vec2<int> MazeSolver::getNextMove(const double carBearing) const {
+bool MazeSolver::findBounds() {
+    for (int x = 0; x < m_MazeWidthEx; x++) {
+        for (int y = 0; y < m_MazeWidthEx; y++) {
+            if (m_wallMatrix[x][y] != 1)
+                continue;
+
+            vec2<int> pos = posExToPos({x,y});
+
+            if (pos.x < m_topLeft.x)
+                m_topLeft.x = pos.x;
+
+            if (pos.y < m_topLeft.y)
+                m_topLeft.y = pos.y;
+
+            if (pos.x > m_bottomRight.x)
+                m_bottomRight.x = pos.x;
+
+            if (pos.y > m_bottomRight.y)
+                m_bottomRight.y = pos.y;
+            
+            if (m_bottomRight.x == -1 || m_bottomRight.y == -1 || m_topLeft.x == -1 || m_topLeft.y == -1)
+                continue;
+
+            if (((m_bottomRight.x - m_topLeft.x + 1) >= ((m_MazeWidth + 1) / 2)) &&
+                ((m_bottomRight.y - m_topLeft.y + 1) >= ((m_MazeHeight + 1) / 2))) {
+                m_blindStage = Stage::FOLLOW_SIDES;
+                return true;
+            }
+
+        }
+    }
+    return false;
+}
+
+vec2<int> MazeSolver::getNextMove(const double carBearing) {
     static vec2<int> lastMove = roundPos(m_currPos);
     moves_t moves = getPossibleMoves();
 
     // CANNOT USE RIGHT WALL HUG FOR BOUND SEARCH!
     // TODO: Create some other algorithm for bound search
+    
+    if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
+        findBounds();
+    }
+
     if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
         moves_t right = radiansToDirection(carBearing + 0.5 * PI_d);
         moves_t forward = radiansToDirection(carBearing);
@@ -402,7 +441,7 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) const {
     }
 
     if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
-        // Call blind floodFill
+        floodFillBlind();
     } 
 
     uint8_t orderSize;
