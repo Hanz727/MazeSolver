@@ -21,7 +21,7 @@ int main() {
 	//mazeSolver.floodFill({0,0});
     mazeSolver.setCurrPos({6,5});
     mazeSolver.setCurrPos({7,5});
-	vec2<int> nm = mazeSolver.getNextMove(0.5*PI_d);
+    vec2<int> nm = mazeSolver.getNextMove(0.5*PI_d);
     
     mazeSolver.printDists();
     mazeSolver.printWalls();

@@ -1,5 +1,6 @@
 #pragma once
 #include "vec2.h"
+#include "FixedDeque.h"
 
 #if defined(__has_include) && __has_include(<stdint.h>)
     #include <stdint.h>
@@ -64,16 +65,19 @@ private:
     vec2<double> m_currPos;
     
     bool m_explorationMode = true;
-    bool m_blind = false;
 
-    // Only applies in blind mode
+    bool m_blind = false;
     Stage m_blindStage = Stage::BOUND_SEARCH;
+    vec2<int> m_topLeft{-1,-1};     // TOP LEFT corner of maze, found by bound search
+    vec2<int> m_bottomRight{-1,-1};
 
     void clearDistanceMatrix();
     void clearWallMatrix();
 
     uint8_t* getMovesOrder(moves_t _moves, uint8_t* size) const;
     
+    void floodFill(FixedDeque<FloodFillNode>& queue);
+    void floodFillBlind();
 public:
     
     MazeSolver(const double wallWidth,
@@ -112,7 +116,7 @@ public:
     vec2<double> cmToPos(const vec2<double>& cm) const;
     vec2<int> roundPos(const vec2<double>& pos) const;
 
-    CompassDir radiansToDirection(const double angleRad) const;
+    CompassDir radiansToDirection(double angleRad) const;
 
     vec2<int> posToPosEx(const vec2<double>& pos) const;
     vec2<double> posExToPos(const vec2<int>& posEx) const;

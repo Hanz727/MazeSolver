@@ -1,5 +1,4 @@
 #include "MazeSolver.h"
-#include "FixedDeque.h"
 
 #include <math.h>
 
@@ -28,7 +27,8 @@ MazeSolver::MazeSolver(
         mazeWidth,
         mazeHeight,
         startPos,
-        endPos
+        endPos,
+        blind
     );
 
 }
@@ -218,13 +218,7 @@ void MazeSolver::markWall(const vec2<double>& pos, const double distance, const 
 
 }
 
-void MazeSolver::floodFill(const vec2<int>& destination) {
-    clearDistanceMatrix();
-    m_distanceMatrix[destination.x][destination.y] = 0;
-
-    FixedDeque<FloodFillNode> queue(m_MazeWidth * m_MazeHeight);
-    queue.push_back({ {12,0}, 0 });
-
+void MazeSolver::floodFill(FixedDeque<FloodFillNode>& queue) {
     while (!(queue.is_empty())) {
         FloodFillNode node = queue.pop_front();
 
@@ -250,8 +244,96 @@ void MazeSolver::floodFill(const vec2<int>& destination) {
 
             queue.push_back({ newPos, node.dist + 1 });
         }
+    }   
+}
 
+
+void MazeSolver::floodFillBlind() {
+    clearDistanceMatrix();
+    FixedDeque<FloodFillNode> queue(m_MazeWidth*m_MazeHeight);
+
+    // Add all possible exits
+    for (int x = 0; x < m_MazeWidth; x++) {
+        for (int y = 0; y < m_MazeHeight; y++) {
+            if (x != m_topLeft.x && x != m_bottomRight.x)
+                continue;
+            
+            if (y != m_topLeft.y && y != m_bottomRight.y)
+                continue;
+            
+            vec2<int> posEx = posToPosEx(vec2<int>{x, y});
+
+            if (x == m_topLeft.x && y == m_topLeft.y) {
+                // Check left and up
+                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y - 1] != 1)
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+            }
+
+            if (x == m_bottomRight.x && y == m_bottomRight.y) {
+                // Check bottom and right
+                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y + 1] != 1)
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+
+            }
+
+            if (x == m_topLeft.x) {
+                // Check left
+                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1) 
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+
+            }
+
+            if (x == m_bottomRight.x) {
+                // Check right
+                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1) 
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;           
+            }
+
+            if (y == m_topLeft.y) {
+                // Check up
+                if (m_wallMatrix[posEx.x][posEx.y - 1] != 1) 
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+            }
+
+            if (y == m_bottomRight.y) {
+                // Check down
+                if (m_wallMatrix[posEx.x][posEx.y + 1] != 1) 
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+
+            }
+
+        }
     }
+
+    floodFill(queue);
+}
+
+void MazeSolver::floodFill(const vec2<int>& destination) {
+    clearDistanceMatrix();
+    m_distanceMatrix[destination.x][destination.y] = 0;
+
+    FixedDeque<FloodFillNode> queue(m_MazeWidth * m_MazeHeight);
+    queue.push_back({ destination, 0 });
+
+    floodFill(queue);
 }
 
 vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
@@ -259,15 +341,14 @@ vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
 }
 
 CompassDir MazeSolver::radiansToDirection(double angleRad) const {
-    constexpr double PI_4 = PI_d / 4.;
-
     angleRad = fmod(angleRad, 2 * PI_d);
     if (angleRad < 0) angleRad += 2*PI_d;
 
     if (angleRad >= 7.0 / 4.0 * PI_d || angleRad < 1.0 / 4.0 * PI_d) return North;
     if (angleRad >= 1.0 / 4.0 * PI_d && angleRad < 3.0 / 4.0 * PI_d) return East;
     if (angleRad >= 3.0 / 4.0 * PI_d && angleRad < 5.0 / 4.0 * PI_d) return South;
-    return West;}
+    return West;
+}
 
 vec2<int> MazeSolver::getNextMove(const double carBearing) const {
     static vec2<int> lastMove = roundPos(m_currPos);
