@@ -5,6 +5,8 @@
     #include <stdint.h>
 #endif
 
+#define PI_d 3.141592653589793
+
 // Max maze size is fixed on 32 by 32
 using matrix2d = int8_t[32][32];
 using matrix2dEx = int8_t[65][65];
@@ -15,6 +17,11 @@ enum CompassDir : uint8_t {
     South = (1 << 1),
     East = (1 << 2),
     West = (1 << 3)
+};
+
+enum class Stage : uint8_t {
+    BOUND_SEARCH, // NOTHING IS KNOWN YET
+    FOLLOW_SIDES  // WE KNOW THE BOUNDS
 };
 
 struct FloodFillNode {
@@ -57,6 +64,10 @@ private:
     vec2<double> m_currPos;
     
     bool m_explorationMode = true;
+    bool m_blind = false;
+
+    // Only applies in blind mode
+    Stage m_blindStage = Stage::BOUND_SEARCH;
 
     void clearDistanceMatrix();
     void clearWallMatrix();
@@ -71,7 +82,8 @@ public:
         const uint8_t mazeWidth,
         const uint8_t mazeHeight,
         const vec2<int> startPos,
-        const vec2<int> endPos
+        const vec2<int> endPos,
+        const bool blind = false
     );
 
     MazeSolver() = default;
@@ -84,7 +96,8 @@ public:
         const uint8_t mazeWidth,
         const uint8_t mazeHeight,
         const vec2<int> startPos,
-        const vec2<int> endPos
+        const vec2<int> endPos,
+        const bool blind = false
     );
 
     void setMovePriority(const moves_t priority[4]);
@@ -99,6 +112,8 @@ public:
     vec2<double> cmToPos(const vec2<double>& cm) const;
     vec2<int> roundPos(const vec2<double>& pos) const;
 
+    CompassDir radiansToDirection(const double angleRad) const;
+
     vec2<int> posToPosEx(const vec2<double>& pos) const;
     vec2<double> posExToPos(const vec2<int>& posEx) const;
 
@@ -107,10 +122,10 @@ public:
     void floodFill(const vec2<int>& destination);
 
     vec2<int> getDirOffset(const CompassDir dir) const;
-    vec2<int> getNextMove() const;
+    vec2<int> getNextMove(const double carBearing = 0.) const;
     moves_t getPossibleMoves() const;
     
-    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angleRad) const;
+    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angle) const;
 
     void printWalls() const;
     void printDists() const;

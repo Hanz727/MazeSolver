@@ -15,7 +15,8 @@ MazeSolver::MazeSolver(
     const uint8_t mazeWidth,
     const uint8_t mazeHeight,
     const vec2<int> startPos,
-    const vec2<int> endPos
+    const vec2<int> endPos,
+    const bool blind 
 )
 {
     m_currPos = m_startPos;
@@ -39,7 +40,8 @@ void MazeSolver::init(
         const uint8_t mazeWidth,
         const uint8_t mazeHeight,
         const vec2<int> startPos,
-        const vec2<int> endPos
+        const vec2<int> endPos,
+        const bool blind
 ) {
 
     m_wallWidth = wallWidth;
@@ -49,6 +51,7 @@ void MazeSolver::init(
     m_MazeHeight = mazeHeight;
     m_startPos = startPos;
     m_endPos = endPos;
+    m_blind = blind;
     
     m_MazeHeightEx = mazeHeight * 2 + 1;
     m_MazeWidthEx = mazeHeight * 2 + 1;
@@ -69,6 +72,13 @@ void MazeSolver::clearWallMatrix() {
     for (int x = 0; x < m_MazeWidthEx; x++) {
         for (int y = 0; y < m_MazeHeightEx; y++) {
             bool wallState = 0;
+            
+            // initialize all walls to zero in blind mode
+            if (m_blind) {
+                m_wallMatrix[x][y] = wallState;
+                continue; 
+            }
+
             if (x == 0 || y == 0)
                 wallState = 1;
 
@@ -213,7 +223,7 @@ void MazeSolver::floodFill(const vec2<int>& destination) {
     m_distanceMatrix[destination.x][destination.y] = 0;
 
     FixedDeque<FloodFillNode> queue(m_MazeWidth * m_MazeHeight);
-    queue.push_back({ destination, 0 });
+    queue.push_back({ {12,0}, 0 });
 
     while (!(queue.is_empty())) {
         FloodFillNode node = queue.pop_front();
@@ -248,18 +258,80 @@ vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
     return m_directions[(int)(log((int)dir) / log(2))];
 }
 
-vec2<int> MazeSolver::getNextMove() const {
+CompassDir MazeSolver::radiansToDirection(double angleRad) const {
+    constexpr double PI_4 = PI_d / 4.;
+
+    angleRad = fmod(angleRad, 2 * PI_d);
+    if (angleRad < 0) angleRad += 2*PI_d;
+
+    if (angleRad >= 7.0 / 4.0 * PI_d || angleRad < 1.0 / 4.0 * PI_d) return North;
+    if (angleRad >= 1.0 / 4.0 * PI_d && angleRad < 3.0 / 4.0 * PI_d) return East;
+    if (angleRad >= 3.0 / 4.0 * PI_d && angleRad < 5.0 / 4.0 * PI_d) return South;
+    return West;}
+
+vec2<int> MazeSolver::getNextMove(const double carBearing) const {
     static vec2<int> lastMove = roundPos(m_currPos);
-    moves_t _moves = getPossibleMoves();
+    moves_t moves = getPossibleMoves();
+
+    // CANNOT USE RIGHT WALL HUG FOR BOUND SEARCH!
+    // TODO: Create some other algorithm for bound search
+    if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
+        moves_t right = radiansToDirection(carBearing + 0.5 * PI_d);
+        moves_t forward = radiansToDirection(carBearing);
+        moves_t left = radiansToDirection(carBearing - 0.5 * PI_d);
+        moves_t backward = radiansToDirection(carBearing + PI_d);
+        
+        vec2<int> bestMovePos;
+        moves_t bestMoveDir = 0;
+        
+        // ugly but works
+        for (int i = 0; i < 4; i++) {
+            moves_t dir = moves & (1 << i);
+            if (!dir)
+                continue;
+
+            // always go right if possible
+            if (dir == right) {
+                bestMovePos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
+                bestMoveDir = dir;
+                break;
+            }
+            
+            if (dir == forward) {
+                bestMovePos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
+                bestMoveDir = dir;
+                continue;
+            }
+            
+            if (dir == left && bestMoveDir != forward) {
+                bestMovePos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
+                bestMoveDir = dir;
+                continue;
+            }
+
+            if (dir == backward && bestMoveDir == 0) {
+                bestMovePos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
+                continue;
+            }
+
+        }
+
+        lastMove = bestMovePos;
+        return bestMovePos;
+    }
+
+    if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
+        // Call blind floodFill
+    } 
 
     uint8_t orderSize;
-    uint8_t* order = getMovesOrder(_moves, &orderSize); 
+    uint8_t* order = getMovesOrder(moves, &orderSize); 
 
     vec2<int> bestMove{ -1 };
     int bestDist = 9999;
     
     for (int i = 0; i < orderSize; i++) {
-        moves_t dir = _moves & (1 << order[i]);
+        moves_t dir = moves & (1 << order[i]);
         if (!dir)
             continue;
 
