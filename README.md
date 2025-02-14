@@ -254,12 +254,13 @@ getDirOffset(South);    // returns vec2<int>{0, 1}
 This mode, stored as ```m_blind``` is meant to solve a maze only with it's dimensions,
 without the knowledge of startPos or endPos. In order to use it you must set the
 maze width and height as 2*x-1. This is beacuse we are making enough place for the middle
-of the maze to be a corner of the actual maze. In this mode there are no 
-walls placed around the edges of the maze as there may be an exit there. <br>
-The startPos has to be set to the center of the larger (2x+1) maze.
-Easy way to do this is to set it to (width-1, height-1), where width
-and height are the dimensions of the actual maze, not the larger one. <br>
+of the maze to be a corner of the actual maze. This larger maze is called the supermaze.
+In this mode there are no walls placed around the edges of the maze as there may be an exit there. <br>
+
+The startPos has to be set to the center of the supermaze.
+Easy way to do this is to set it to (width-1, height-1), where width and height are the dimensions of the maze (not supermaze) <br>
 
 In blind mode, there are two stages. ```Stage::BOUND_SEARCH``` and ```Stage::FOLLOW_SIDES```
 In the bound search stage we are looking for 2 vertical walls separated by maze width and 2 horizontal walls separated by maze height.
 After that the stage is switched as we know where to place the zeroes in floodFill.
+In the second stage we simply go to the closest outer wall which can potentially be an exit.
