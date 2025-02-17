@@ -121,19 +121,19 @@ uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetR
                 moves_t newDirectionI = order[i];
                 moves_t newDirectionJ = order[j];
                 
+                // I will not explain...
                 newDirectionI = radiansToDirection(
                         directionToRadians((CompassDir)(1 << order[i]))
-                        + offsetRad
-                );
+                        + (2*PI_d - offsetRad)
+                        );
+
                 newDirectionJ = radiansToDirection(
                         directionToRadians((CompassDir)(1 << order[j]))
-                        + offsetRad
-                );
+                        + (2*PI_d - offsetRad)
+                        );
                 newIndexI = log((int)newDirectionI)/log(2);
                 newIndexJ = log((int)newDirectionJ)/log(2);
             } 
-            
-            std::cout << (int)newIndexI << " " << (int)newIndexJ << "\n";
 
             if (m_movePriority[newIndexI] > m_movePriority[newIndexJ]) {
                 // swap
@@ -409,17 +409,22 @@ bool MazeSolver::findBounds() {
                 continue;
 
             vec2<int> pos = posExToPos({x,y});
-
-            if (pos.x < m_topLeft.x)
+            vec2<int> cellPosEx = posToPosEx(pos);
+            
+            // left
+            if (pos.x < m_topLeft.x && m_wallMatrix[cellPosEx.x-1][cellPosEx.y])
                 m_topLeft.x = pos.x;
-
-            if (pos.y < m_topLeft.y)
+            
+            // up
+            if (pos.y < m_topLeft.y && m_wallMatrix[cellPosEx.x][cellPosEx.y-1])
                 m_topLeft.y = pos.y;
-
-            if (pos.x > m_bottomRight.x)
+            
+            // right
+            if (pos.x > m_bottomRight.x && m_wallMatrix[cellPosEx.x+1][cellPosEx.y])
                 m_bottomRight.x = pos.x;
-
-            if (pos.y > m_bottomRight.y)
+            
+            // bottom
+            if (pos.y > m_bottomRight.y && m_wallMatrix[cellPosEx.x][cellPosEx.y+1])
                 m_bottomRight.y = pos.y;
             
             if (m_bottomRight.x == -1 || m_bottomRight.y == -1 || m_topLeft.x == -1 || m_topLeft.y == -1)
@@ -439,6 +444,8 @@ bool MazeSolver::findBounds() {
 vec2<int> MazeSolver::getNextMove(const double carBearing) {
     static vec2<int> lastMove = roundPos(m_currPos);
 
+    // TODO: Could optimize this to floodfill only once per currPos
+
     if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
         // Look for bounds to switch stage
         findBounds();
@@ -453,7 +460,7 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
     moves_t moves = getPossibleMoves();
 
     uint8_t orderSize;
-    uint8_t* order = getMovesOrder(moves, &orderSize); 
+    uint8_t* order = getMovesOrder(moves, &orderSize, carBearing); 
 
     vec2<int> bestMove{ -1 };
     int bestDist = 9999;
