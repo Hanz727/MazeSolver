@@ -1,5 +1,6 @@
 #include "MazeSolver.h"
 
+#include <cfloat>
 #include <math.h>
 
 #ifdef DEBUG
@@ -101,7 +102,7 @@ void MazeSolver::setMovePriority(const moves_t priority[4]) {
     }
 }
 
-uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size) const {
+uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad) const {
     uint8_t* order = new uint8_t[4]();
     *size = 0;
 
@@ -113,7 +114,28 @@ uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size) const {
     // Sort moves according to priority
     for (int i = 0; i < *size; i++) {
         for (int j = i + 1; j < *size; j++) {
-            if (m_movePriority[order[i]] > m_movePriority[order[j]]) {
+            uint8_t newIndexI = order[i]; 
+            uint8_t newIndexJ = order[j];
+
+            if (offsetRad != 0.) {
+                moves_t newDirectionI = order[i];
+                moves_t newDirectionJ = order[j];
+                
+                newDirectionI = radiansToDirection(
+                        directionToRadians((CompassDir)(1 << order[i]))
+                        + offsetRad
+                );
+                newDirectionJ = radiansToDirection(
+                        directionToRadians((CompassDir)(1 << order[j]))
+                        + offsetRad
+                );
+                newIndexI = log((int)newDirectionI)/log(2);
+                newIndexJ = log((int)newDirectionJ)/log(2);
+            } 
+            
+            std::cout << (int)newIndexI << " " << (int)newIndexJ << "\n";
+
+            if (m_movePriority[newIndexI] > m_movePriority[newIndexJ]) {
                 // swap
                 uint8_t temp = order[i];
                 order[i] = order[j];
@@ -248,6 +270,23 @@ void MazeSolver::floodFill(FixedDeque<FloodFillNode>& queue) {
 }
 
 
+void MazeSolver::floodFillUnvisited() {
+    clearDistanceMatrix();
+    FixedDeque<FloodFillNode> queue(m_MazeWidth*m_MazeHeight);
+    for (int x = 0; x < m_MazeWidth; x++) {
+        for (int y = 0; y < m_MazeHeight; y++) {
+           if (m_visitedMatrix[x][y])
+               continue;
+
+           queue.push_back({{x,y}, 0});
+           m_distanceMatrix[x][y] = 0;
+
+        }
+    }
+
+    floodFill(queue);
+}
+
 void MazeSolver::floodFillBlind() {
     clearDistanceMatrix();
     FixedDeque<FloodFillNode> queue(m_MazeWidth*m_MazeHeight);
@@ -340,6 +379,19 @@ vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
     return m_directions[(int)(log((int)dir) / log(2))];
 }
 
+double MazeSolver::directionToRadians(CompassDir dir) const {
+    if (dir == North)
+        return 0.;
+    if (dir == South)
+        return PI_d;
+    if (dir == East)
+        return 0.5*PI_d;
+    if (dir == West)
+        return 1.5*PI_d;
+
+    return DBL_MAX;
+}
+
 CompassDir MazeSolver::radiansToDirection(double angleRad) const {
     angleRad = fmod(angleRad, 2 * PI_d);
     if (angleRad < 0) angleRad += 2*PI_d;
@@ -386,63 +438,19 @@ bool MazeSolver::findBounds() {
 
 vec2<int> MazeSolver::getNextMove(const double carBearing) {
     static vec2<int> lastMove = roundPos(m_currPos);
-    moves_t moves = getPossibleMoves();
 
-    // CANNOT USE RIGHT WALL HUG FOR BOUND SEARCH!
-    // TODO: Create some other algorithm for bound search
-    
     if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
+        // Look for bounds to switch stage
         findBounds();
-    }
-
-    if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
-        moves_t right = radiansToDirection(carBearing + 0.5 * PI_d);
-        moves_t forward = radiansToDirection(carBearing);
-        moves_t left = radiansToDirection(carBearing - 0.5 * PI_d);
-        moves_t backward = radiansToDirection(carBearing + PI_d);
         
-        vec2<int> bestMovePos;
-        moves_t bestMoveDir = 0;
-        
-        // ugly but works
-        for (int i = 0; i < 4; i++) {
-            moves_t dir = moves & (1 << i);
-            if (!dir)
-                continue;
-
-            // always go right if possible
-            if (dir == right) {
-                bestMovePos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
-                bestMoveDir = dir;
-                break;
-            }
-            
-            if (dir == forward) {
-                bestMovePos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
-                bestMoveDir = dir;
-                continue;
-            }
-            
-            if (dir == left && bestMoveDir != forward) {
-                bestMovePos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
-                bestMoveDir = dir;
-                continue;
-            }
-
-            if (dir == backward && bestMoveDir == 0) {
-                bestMovePos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
-                continue;
-            }
-
-        }
-
-        lastMove = bestMovePos;
-        return bestMovePos;
-    }
-
-    if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
+        // FloodFill with all unvisited set to 0
+        floodFillUnvisited();
+    } else if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
+        // FloodFill with all possible exits set to 0
         floodFillBlind();
     } 
+
+    moves_t moves = getPossibleMoves();
 
     uint8_t orderSize;
     uint8_t* order = getMovesOrder(moves, &orderSize); 
@@ -452,6 +460,7 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
     
     for (int i = 0; i < orderSize; i++) {
         moves_t dir = moves & (1 << order[i]);
+
         if (!dir)
             continue;
 

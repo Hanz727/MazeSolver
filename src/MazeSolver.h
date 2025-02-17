@@ -56,8 +56,8 @@ private:
     moves_t m_movePriority[4] = {
         1, // N
         3, // S
-        2, // E
-        0, // W
+        0, // E
+        2, // W
     };
 
     vec2<int> m_startPos;
@@ -74,13 +74,14 @@ private:
     void clearDistanceMatrix();
     void clearWallMatrix();
 
-    uint8_t* getMovesOrder(moves_t _moves, uint8_t* size) const;
     
     void floodFill(FixedDeque<FloodFillNode>& queue);
     void floodFillBlind();
+    void floodFillUnvisited();
 
     bool findBounds();
 public:
+    uint8_t* getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad = 0.) const;
     
     MazeSolver(const double wallWidth,
         const double cellWidth,
@@ -119,6 +120,7 @@ public:
     vec2<int> roundPos(const vec2<double>& pos) const;
 
     CompassDir radiansToDirection(double angleRad) const;
+    double directionToRadians(CompassDir dir) const;
 
     vec2<int> posToPosEx(const vec2<double>& pos) const;
     vec2<double> posExToPos(const vec2<int>& posEx) const;
