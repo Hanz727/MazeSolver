@@ -59,6 +59,22 @@ MazeSolver mazeSolver(
 );
 ```
 
+## Grid system
+Firstly there are cell positions, usually not distinguished by any pre/sub fix, 
+often just called `pos`. (0,0) pos is top-left of the grid. Any cell can have up to four walls around it, 
+blocking the entrance to the adjacent cell. Position doesn't need to be an integer and (0.5,0) means we are exactly
+half way between two cells, inside a wall. To correlate this arbitrary position there is `cm` or `posCm`.
+This "position" is the offset in centimeters from the top-left corner (from outside the wall) to cell position.
+Meaning that if a wall is 1 cm thick and cell is 10cm by 10cm, pos (0,0) is equal to posCm(11,11).
+To store the walls there is another coordinate system often called posEx, meaning extended.
+`m_mazeWidthEx` and it's height equivalent are 2x+1 bigger than the normal grid (`m_mazeWidth`).
+posEx(1,1) is equal to pos(0,0), posEx(0,1) is the wall left to pos(0,0) and posEx(2,1) is the wall right of pos(0,0).
+Within this grid we can see "corner walls", such as posEx(0,0), but this is disregarded and used as a buffer between walls to prevent 
+accidentally detecting the wrong wall. <br>
+
+In blind mode, there also is a `supermaze`. Supermaze contains all possible translations of a smaller maze where supermaze's middle point is contained
+within the smaller maze. This ensures that the start position is fixed, but you can still be at any position in the smaller maze. It's size is
+2x-1 the smaller maze and its middle point and start point is always x-1 where x is width or height.
 
 ## Important functions
 
