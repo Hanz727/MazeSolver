@@ -1,9 +1,12 @@
 #pragma once
 #include "vec2.h"
+#include "FixedDeque.h"
 
 #if defined(__has_include) && __has_include(<stdint.h>)
     #include <stdint.h>
 #endif
+
+#define PI_d 3.141592653589793
 
 // Max maze size is fixed on 32 by 32
 using matrix2d = int8_t[32][32];
@@ -15,6 +18,11 @@ enum CompassDir : uint8_t {
     South = (1 << 1),
     East = (1 << 2),
     West = (1 << 3)
+};
+
+enum class Stage : uint8_t {
+    BOUND_SEARCH, // NOTHING IS KNOWN YET
+    FOLLOW_SIDES  // WE KNOW THE BOUNDS
 };
 
 struct FloodFillNode {
@@ -48,8 +56,8 @@ private:
     moves_t m_movePriority[4] = {
         1, // N
         3, // S
-        2, // E
-        0, // W
+        0, // E
+        2, // W
     };
 
     vec2<int> m_startPos;
@@ -58,11 +66,21 @@ private:
     
     bool m_explorationMode = true;
 
+    bool m_blind = false;
+    Stage m_blindStage = Stage::BOUND_SEARCH;
+    vec2<int> m_topLeft{-1,-1};     // TOP LEFT corner of maze, found by bound search
+    vec2<int> m_bottomRight{-1,-1};
+
     void clearDistanceMatrix();
     void clearWallMatrix();
 
-    uint8_t* getMovesOrder(moves_t _moves, uint8_t* size) const;
     
+    void floodFill(FixedDeque<FloodFillNode>& queue);
+    void floodFillBlind();
+    void floodFillUnvisited();
+
+    bool findBounds();
+    uint8_t* getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad = 0.) const;
 public:
     
     MazeSolver(const double wallWidth,
@@ -71,7 +89,8 @@ public:
         const uint8_t mazeWidth,
         const uint8_t mazeHeight,
         const vec2<int> startPos,
-        const vec2<int> endPos
+        const vec2<int> endPos,
+        const bool blind = false
     );
 
     MazeSolver() = default;
@@ -84,7 +103,8 @@ public:
         const uint8_t mazeWidth,
         const uint8_t mazeHeight,
         const vec2<int> startPos,
-        const vec2<int> endPos
+        const vec2<int> endPos,
+        const bool blind = false
     );
 
     void setMovePriority(const moves_t priority[4]);
@@ -99,6 +119,9 @@ public:
     vec2<double> cmToPos(const vec2<double>& cm) const;
     vec2<int> roundPos(const vec2<double>& pos) const;
 
+    CompassDir radiansToDirection(double angleRad) const;
+    double directionToRadians(CompassDir dir) const;
+
     vec2<int> posToPosEx(const vec2<double>& pos) const;
     vec2<double> posExToPos(const vec2<int>& posEx) const;
 
@@ -107,10 +130,10 @@ public:
     void floodFill(const vec2<int>& destination);
 
     vec2<int> getDirOffset(const CompassDir dir) const;
-    vec2<int> getNextMove() const;
+    vec2<int> getNextMove(const double carBearing = 0.);
     moves_t getPossibleMoves() const;
     
-    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angleRad) const;
+    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angle) const;
 
     void printWalls() const;
     void printDists() const;

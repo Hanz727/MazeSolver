@@ -10,7 +10,8 @@ MazeSolver mazeSolver(
         const uint8_t mazeWidth,
         const uint8_t mazeHeight,
         const vec2<int> startPos,
-        const vec2<int> endPos
+        const vec2<int> endPos,
+        const bool blind
 );
 ```
 Alternatively:
@@ -24,7 +25,8 @@ mazeSolver.init(
         const uint8_t mazeWidth,
         const uint8_t mazeHeight,
         const vec2<int> startPos,
-        const vec2<int> endPos
+        const vec2<int> endPos,
+        const bool blind
 )
 ```
 This can be used if you don't know the exact dimensions or start/end position yet, but can aquire that information while in the maze.
@@ -39,9 +41,24 @@ MazeSolver mazeSolver(
     10,
     10,
     {0,0},
-    {9,9}
+    {9,9},
+    false
 );
 ```
+or for blind mode:
+```c
+MazeSolver mazeSolver(
+    1.,
+    20.,
+    20.,
+    10*2-1, // width * 2 - 1
+    10*2-1, // height * 2 - 1
+    {10-1,10-1}, // width - 1, height - 1
+    {-1,-1}, // doesn't matter what is here, there is no end point in blind mode
+    true // blind mode on
+);
+```
+
 
 ## Important functions
 
@@ -104,27 +121,38 @@ integer is the number of steps away from the destination. This algorithm factors
 if there is a wall blocking the direct path. [getNextMove](#getNextMove) function will follow the cell with the lowest distance to reach the destination. <br> 
 
 Whenever using this function you first [markWall](#markWall) to ensure you have all the needed data before running the algorithm.
-This function is usually followed by [getNextMove](#getNextMove) to navigate towards destination.
+This function is usually followed by [getNextMove](#getNextMove) to navigate towards destination. <br>
 
+Do NOT use this function in blind mode. A different type of floodFill is called from within the [getNextMove](#getNextMove) function.
 ___
 
 ### getNextMove 
-getNextMove - Gives the adjecent cell of current position with lowest
-distance to destination complying with ```m_movePriority```.
+getNextMove - Gives the adjecent cell to current position that has 
+the lowest distance to destination or uses the DimSearch algorithm in blind mode. 
 
 ### C Specification
 
-```c
-vec2<int> getNextMove();
+```cpp
+vec2<int> getNextMove(const double carBearing = 0.f);
 ```
+
+
+### Parameters
+
+***carBearing*** <br> 
+    &nbsp;&nbsp;&nbsp;&nbsp;Car bearing in radians where North of the maze is 0 and south is pi. 
+                            Ignore this if not in blind mode<br>
 
 ### Description
 
-```getNextMove``` returns a adjecent cell to ```m_currPos``` with
+In normal mode, ```getNextMove``` returns a adjecent cell to ```m_currPos``` with
 the lowest distance to destination provided to [floodFill](#floodFill).
 If there are multiple adjecent cells with equal distance to the 
 destination, then ```m_movePriority``` is followed. The previous
 position always has the lowest priority to avoid going back and fourth. <br>
+
+In blind mode, it will first attempt to identify the bounds of the maze and then switch to
+floodFill with destination on each outer cell where no wall was yet detected. <br>
 
 The adjescent cell is returned as a grid vec2<int>
 where top left cell is (0,0)
@@ -221,3 +249,18 @@ getDirOffset((1 << 0)); // returns vec2<int>{0, -1}
 getDirOffset(South);    // returns vec2<int>{0, 1}
 ```
 
+
+## Blind mode
+This mode, stored as ```m_blind``` is meant to solve a maze only with it's dimensions,
+without the knowledge of startPos or endPos. In order to use it you must set the
+maze width and height as 2*x-1. This is beacuse we are making enough place for the middle
+of the maze to be a corner of the actual maze. This larger maze is called the supermaze.
+In this mode there are no walls placed around the edges of the maze as there may be an exit there. <br>
+
+The startPos has to be set to the center of the supermaze.
+Easy way to do this is to set it to (width-1, height-1), where width and height are the dimensions of the maze (not supermaze) <br>
+
+In blind mode, there are two stages. ```Stage::BOUND_SEARCH``` and ```Stage::FOLLOW_SIDES```
+In the bound search stage we are looking for 2 vertical walls separated by maze width and 2 horizontal walls separated by maze height.
+After that the stage is switched as we know where to place the zeroes in floodFill.
+In the second stage we simply go to the closest outer wall which can potentially be an exit.

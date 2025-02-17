@@ -1,6 +1,6 @@
 #include "MazeSolver.h"
-#include "FixedDeque.h"
 
+#include <cfloat>
 #include <math.h>
 
 #ifdef DEBUG
@@ -15,7 +15,8 @@ MazeSolver::MazeSolver(
     const uint8_t mazeWidth,
     const uint8_t mazeHeight,
     const vec2<int> startPos,
-    const vec2<int> endPos
+    const vec2<int> endPos,
+    const bool blind 
 )
 {
     m_currPos = m_startPos;
@@ -27,7 +28,8 @@ MazeSolver::MazeSolver(
         mazeWidth,
         mazeHeight,
         startPos,
-        endPos
+        endPos,
+        blind
     );
 
 }
@@ -39,7 +41,8 @@ void MazeSolver::init(
         const uint8_t mazeWidth,
         const uint8_t mazeHeight,
         const vec2<int> startPos,
-        const vec2<int> endPos
+        const vec2<int> endPos,
+        const bool blind
 ) {
 
     m_wallWidth = wallWidth;
@@ -49,6 +52,7 @@ void MazeSolver::init(
     m_MazeHeight = mazeHeight;
     m_startPos = startPos;
     m_endPos = endPos;
+    m_blind = blind;
     
     m_MazeHeightEx = mazeHeight * 2 + 1;
     m_MazeWidthEx = mazeHeight * 2 + 1;
@@ -69,6 +73,13 @@ void MazeSolver::clearWallMatrix() {
     for (int x = 0; x < m_MazeWidthEx; x++) {
         for (int y = 0; y < m_MazeHeightEx; y++) {
             bool wallState = 0;
+            
+            // initialize all walls to zero in blind mode
+            if (m_blind) {
+                m_wallMatrix[x][y] = wallState;
+                continue; 
+            }
+
             if (x == 0 || y == 0)
                 wallState = 1;
 
@@ -91,7 +102,7 @@ void MazeSolver::setMovePriority(const moves_t priority[4]) {
     }
 }
 
-uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size) const {
+uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad) const {
     uint8_t* order = new uint8_t[4]();
     *size = 0;
 
@@ -103,7 +114,28 @@ uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size) const {
     // Sort moves according to priority
     for (int i = 0; i < *size; i++) {
         for (int j = i + 1; j < *size; j++) {
-            if (m_movePriority[order[i]] > m_movePriority[order[j]]) {
+            uint8_t newIndexI = order[i]; 
+            uint8_t newIndexJ = order[j];
+
+            if (offsetRad != 0.) {
+                moves_t newDirectionI = order[i];
+                moves_t newDirectionJ = order[j];
+                
+                // I will not explain...
+                newDirectionI = radiansToDirection(
+                        directionToRadians((CompassDir)(1 << order[i]))
+                        + (2*PI_d - offsetRad)
+                        );
+
+                newDirectionJ = radiansToDirection(
+                        directionToRadians((CompassDir)(1 << order[j]))
+                        + (2*PI_d - offsetRad)
+                        );
+                newIndexI = log((int)newDirectionI)/log(2);
+                newIndexJ = log((int)newDirectionJ)/log(2);
+            } 
+
+            if (m_movePriority[newIndexI] > m_movePriority[newIndexJ]) {
                 // swap
                 uint8_t temp = order[i];
                 order[i] = order[j];
@@ -208,13 +240,7 @@ void MazeSolver::markWall(const vec2<double>& pos, const double distance, const 
 
 }
 
-void MazeSolver::floodFill(const vec2<int>& destination) {
-    clearDistanceMatrix();
-    m_distanceMatrix[destination.x][destination.y] = 0;
-
-    FixedDeque<FloodFillNode> queue(m_MazeWidth * m_MazeHeight);
-    queue.push_back({ destination, 0 });
-
+void MazeSolver::floodFill(FixedDeque<FloodFillNode>& queue) {
     while (!(queue.is_empty())) {
         FloodFillNode node = queue.pop_front();
 
@@ -240,26 +266,208 @@ void MazeSolver::floodFill(const vec2<int>& destination) {
 
             queue.push_back({ newPos, node.dist + 1 });
         }
+    }   
+}
 
+
+void MazeSolver::floodFillUnvisited() {
+    clearDistanceMatrix();
+    FixedDeque<FloodFillNode> queue(m_MazeWidth*m_MazeHeight);
+    for (int x = 0; x < m_MazeWidth; x++) {
+        for (int y = 0; y < m_MazeHeight; y++) {
+           if (m_visitedMatrix[x][y])
+               continue;
+
+           queue.push_back({{x,y}, 0});
+           m_distanceMatrix[x][y] = 0;
+
+        }
     }
+
+    floodFill(queue);
+}
+
+void MazeSolver::floodFillBlind() {
+    clearDistanceMatrix();
+    FixedDeque<FloodFillNode> queue(m_MazeWidth*m_MazeHeight);
+
+    // Add all possible exits
+    for (int x = 0; x < m_MazeWidth; x++) {
+        for (int y = 0; y < m_MazeHeight; y++) {
+            if (x != m_topLeft.x && x != m_bottomRight.x)
+                continue;
+            
+            if (y != m_topLeft.y && y != m_bottomRight.y)
+                continue;
+            
+            vec2<int> posEx = posToPosEx(vec2<int>{x, y});
+
+            if (x == m_topLeft.x && y == m_topLeft.y) {
+                // Check left and up
+                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y - 1] != 1)
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+            }
+
+            if (x == m_bottomRight.x && y == m_bottomRight.y) {
+                // Check bottom and right
+                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y + 1] != 1)
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+
+            }
+
+            if (x == m_topLeft.x) {
+                // Check left
+                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1) 
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+
+            }
+
+            if (x == m_bottomRight.x) {
+                // Check right
+                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1) 
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;           
+            }
+
+            if (y == m_topLeft.y) {
+                // Check up
+                if (m_wallMatrix[posEx.x][posEx.y - 1] != 1) 
+                    continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+            }
+
+            if (y == m_bottomRight.y) {
+                // Check down
+                if (m_wallMatrix[posEx.x][posEx.y + 1] != 1) 
+            continue;
+
+                queue.push_back({{x,y}, 0});
+                m_distanceMatrix[x][y] = 0;
+
+            }
+
+        }
+    }
+
+    floodFill(queue);
+}
+
+void MazeSolver::floodFill(const vec2<int>& destination) {
+    clearDistanceMatrix();
+    m_distanceMatrix[destination.x][destination.y] = 0;
+
+    FixedDeque<FloodFillNode> queue(m_MazeWidth * m_MazeHeight);
+    queue.push_back({ destination, 0 });
+
+    floodFill(queue);
 }
 
 vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
     return m_directions[(int)(log((int)dir) / log(2))];
 }
 
-vec2<int> MazeSolver::getNextMove() const {
+double MazeSolver::directionToRadians(CompassDir dir) const {
+    if (dir == North)
+        return 0.;
+    if (dir == South)
+        return PI_d;
+    if (dir == East)
+        return 0.5*PI_d;
+    if (dir == West)
+        return 1.5*PI_d;
+
+    return DBL_MAX;
+}
+
+CompassDir MazeSolver::radiansToDirection(double angleRad) const {
+    angleRad = fmod(angleRad, 2 * PI_d);
+    if (angleRad < 0) angleRad += 2*PI_d;
+
+    if (angleRad >= 7.0 / 4.0 * PI_d || angleRad < 1.0 / 4.0 * PI_d) return North;
+    if (angleRad >= 1.0 / 4.0 * PI_d && angleRad < 3.0 / 4.0 * PI_d) return East;
+    if (angleRad >= 3.0 / 4.0 * PI_d && angleRad < 5.0 / 4.0 * PI_d) return South;
+    return West;
+}
+
+bool MazeSolver::findBounds() {
+    for (int x = 0; x < m_MazeWidthEx; x++) {
+        for (int y = 0; y < m_MazeWidthEx; y++) {
+            if (m_wallMatrix[x][y] != 1)
+                continue;
+
+            vec2<int> pos = posExToPos({x,y});
+            vec2<int> cellPosEx = posToPosEx(pos);
+            
+            // left
+            if (pos.x < m_topLeft.x && m_wallMatrix[cellPosEx.x-1][cellPosEx.y])
+                m_topLeft.x = pos.x;
+            
+            // up
+            if (pos.y < m_topLeft.y && m_wallMatrix[cellPosEx.x][cellPosEx.y-1])
+                m_topLeft.y = pos.y;
+            
+            // right
+            if (pos.x > m_bottomRight.x && m_wallMatrix[cellPosEx.x+1][cellPosEx.y])
+                m_bottomRight.x = pos.x;
+            
+            // bottom
+            if (pos.y > m_bottomRight.y && m_wallMatrix[cellPosEx.x][cellPosEx.y+1])
+                m_bottomRight.y = pos.y;
+            
+            if (m_bottomRight.x == -1 || m_bottomRight.y == -1 || m_topLeft.x == -1 || m_topLeft.y == -1)
+                continue;
+
+            if (((m_bottomRight.x - m_topLeft.x + 1) >= ((m_MazeWidth + 1) / 2)) &&
+                ((m_bottomRight.y - m_topLeft.y + 1) >= ((m_MazeHeight + 1) / 2))) {
+                m_blindStage = Stage::FOLLOW_SIDES;
+                return true;
+            }
+
+        }
+    }
+    return false;
+}
+
+vec2<int> MazeSolver::getNextMove(const double carBearing) {
     static vec2<int> lastMove = roundPos(m_currPos);
-    moves_t _moves = getPossibleMoves();
+
+    // TODO: Could optimize this to floodfill only once per currPos
+
+    if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
+        // Look for bounds to switch stage
+        findBounds();
+        
+        // FloodFill with all unvisited set to 0
+        floodFillUnvisited();
+    } else if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
+        // FloodFill with all possible exits set to 0
+        floodFillBlind();
+    } 
+
+    moves_t moves = getPossibleMoves();
 
     uint8_t orderSize;
-    uint8_t* order = getMovesOrder(_moves, &orderSize); 
+    uint8_t* order = getMovesOrder(moves, &orderSize, carBearing); 
 
     vec2<int> bestMove{ -1 };
     int bestDist = 9999;
     
     for (int i = 0; i < orderSize; i++) {
-        moves_t dir = _moves & (1 << order[i]);
+        moves_t dir = moves & (1 << order[i]);
+
         if (!dir)
             continue;
 

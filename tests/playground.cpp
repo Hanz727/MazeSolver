@@ -5,20 +5,29 @@ MazeSolver mazeSolver;
 
 int main() {
 	mazeSolver.init(
-		1.,
+		4.,
 		20.,
 		20.,
-		10,
-		10,
-		{ 0,0 },
-		{ 9,9 }
-	);
+		7 * 2 - 1,
+		7 * 2 - 1,
+		{ 7-1,7-1 },
+		{ -1, -1 },
+	    true 
+    );
+    
+   	mazeSolver.markWall({ 6,6 }, 10, CompassDir::East); 
+    
+    int steps = 10;
+    double angle = 0.;
+    for (int i = 0; i < steps; i++) {
+	    vec2<int> nm = mazeSolver.getNextMove(angle);
+        
+        std::cout << "pos: (" << mazeSolver.getCurrPos().x << ", " << mazeSolver.getCurrPos().y << ") nextPos: (" << nm.x << ", " << nm.y << ") angle: " << angle << "\n";
+        angle = atan2(nm.y-mazeSolver.getCurrPos().y, nm.x-mazeSolver.getCurrPos().x) + 0.5*PI_d;
+        mazeSolver.setCurrPos(nm);
+    }
 
-   	mazeSolver.markWall({ 0,0 }, 10, CompassDir::East);
-	mazeSolver.floodFill({1,0});
-	vec2<int> nm = mazeSolver.getNextMove();
     
     mazeSolver.printDists();
     mazeSolver.printWalls();
-    std::cout << nm.x << " " << nm.y << "\n";
 }
