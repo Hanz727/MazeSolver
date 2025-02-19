@@ -1,6 +1,6 @@
 #include "MazeSolver.h"
 
-#include <cfloat>
+#include <float.h>
 #include <math.h>
 
 #ifdef DEBUG
@@ -389,7 +389,7 @@ double MazeSolver::directionToRadians(CompassDir dir) const {
     if (dir == West)
         return 1.5*PI_d;
 
-    return DBL_MAX;
+    return FLT_MAX;
 }
 
 CompassDir MazeSolver::radiansToDirection(double angleRad) const {
