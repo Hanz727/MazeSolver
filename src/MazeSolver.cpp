@@ -292,69 +292,60 @@ void MazeSolver::floodFillBlind() {
     // Add all possible exits
     for (int x = 0; x < m_MazeWidth; x++) {
         for (int y = 0; y < m_MazeHeight; y++) {
-            if (x != m_topLeft.x && x != m_bottomRight.x)
+            if (x != m_topLeft.x && x != m_bottomRight.x && y != m_topLeft.y && y != m_bottomRight.y)
                 continue;
-            
-            if (y != m_topLeft.y && y != m_bottomRight.y)
+
+            if (x < m_topLeft.x || x > m_bottomRight.x || y < m_topLeft.y || y > m_bottomRight.y)
                 continue;
             
             vec2<int> posEx = posToPosEx(vec2<int>{x, y});
 
             if (x == m_topLeft.x && y == m_topLeft.y) {
                 // Check left and up
-                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y - 1] != 1)
-                    continue;
-
-                queue.push_back({{x,y}, 0});
-                m_distanceMatrix[x][y] = 0;
+                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y - 1] != 1) {
+                    queue.push_back({{x,y}, 0});
+                    m_distanceMatrix[x][y] = 0;
+                }
             }
 
             if (x == m_bottomRight.x && y == m_bottomRight.y) {
                 // Check bottom and right
-                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y + 1] != 1)
-                    continue;
-
-                queue.push_back({{x,y}, 0});
-                m_distanceMatrix[x][y] = 0;
-
+                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y + 1] != 1) {
+                    queue.push_back({{x,y}, 0});
+                    m_distanceMatrix[x][y] = 0;
+                }
             }
 
             if (x == m_topLeft.x) {
                 // Check left
-                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1) 
-                    continue;
-
-                queue.push_back({{x,y}, 0});
-                m_distanceMatrix[x][y] = 0;
-
+                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1) {
+                    queue.push_back({{x,y}, 0});
+                    m_distanceMatrix[x][y] = 0;
+                }
             }
 
             if (x == m_bottomRight.x) {
                 // Check right
-                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1) 
-                    continue;
-
-                queue.push_back({{x,y}, 0});
-                m_distanceMatrix[x][y] = 0;           
+                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1) {
+                    queue.push_back({{x,y}, 0});
+                    m_distanceMatrix[x][y] = 0;           
+                }
             }
 
             if (y == m_topLeft.y) {
                 // Check up
-                if (m_wallMatrix[posEx.x][posEx.y - 1] != 1) 
-                    continue;
-
-                queue.push_back({{x,y}, 0});
-                m_distanceMatrix[x][y] = 0;
+                if (m_wallMatrix[posEx.x][posEx.y - 1] != 1) {
+                    queue.push_back({{x,y}, 0});
+                    m_distanceMatrix[x][y] = 0;
+                }
             }
 
             if (y == m_bottomRight.y) {
                 // Check down
-                if (m_wallMatrix[posEx.x][posEx.y + 1] != 1) 
-            continue;
-
-                queue.push_back({{x,y}, 0});
-                m_distanceMatrix[x][y] = 0;
-
+                if (m_wallMatrix[posEx.x][posEx.y + 1] != 1) {
+                    queue.push_back({{x,y}, 0});
+                    m_distanceMatrix[x][y] = 0;
+                }
             }
 
         }
@@ -425,7 +416,7 @@ bool MazeSolver::findBounds() {
             if (pos.y > m_bottomRight.y && m_wallMatrix[cellPosEx.x][cellPosEx.y+1])
                 m_bottomRight.y = pos.y;
             
-            if (m_bottomRight.x == -1 || m_bottomRight.y == -1 || m_topLeft.x == -1 || m_topLeft.y == -1)
+            if (m_bottomRight.x == -1 || m_bottomRight.y == -1 || m_topLeft.x == 999 || m_topLeft.y == 999)
                 continue;
 
             if (((m_bottomRight.x - m_topLeft.x + 1) >= ((m_MazeWidth + 1) / 2)) &&
@@ -445,12 +436,15 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
     // TODO: Could optimize this to floodfill only once per currPos
 
     if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
+        // FloodFill with all unvisited set to 0
+        floodFillUnvisited();
+
         // Look for bounds to switch stage
         findBounds();
         
-        // FloodFill with all unvisited set to 0
-        floodFillUnvisited();
-    } else if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
+    } 
+
+    if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
         // FloodFill with all possible exits set to 0
         floodFillBlind();
     } 

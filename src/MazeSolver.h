@@ -69,7 +69,7 @@ private:
 
     bool m_blind = false;
     Stage m_blindStage = Stage::BOUND_SEARCH;
-    vec2<int> m_topLeft{-1,-1};     // TOP LEFT corner of maze, found by bound search
+    vec2<int> m_topLeft{999,999};     // TOP LEFT corner of maze, found by bound search
     vec2<int> m_bottomRight{-1,-1};
 
     void clearDistanceMatrix();
