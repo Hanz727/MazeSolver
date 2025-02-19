@@ -7,6 +7,7 @@
 #endif
 
 #define PI_d 3.141592653589793
+#define INVALID_ANGLE -123.45 
 
 // Max maze size is fixed on 32 by 32
 using matrix2d = int8_t[32][32];
