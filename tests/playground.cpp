@@ -26,7 +26,6 @@ int main() {
         angle = atan2(nm.y-mazeSolver.getCurrPos().y, nm.x-mazeSolver.getCurrPos().x) + 0.5*PI_d;
         mazeSolver.setCurrPos(nm);
     }
-
     
     mazeSolver.printDists();
     mazeSolver.printWalls();
