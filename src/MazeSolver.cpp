@@ -300,11 +300,16 @@ void MazeSolver::floodFillBlind() {
             
             vec2<int> posEx = posToPosEx(vec2<int>{x, y});
 
+            if (m_currPos.x == x && m_currPos.y == y) {
+                m_atExit = true;
+            }
+
             if (x == m_topLeft.x && y == m_topLeft.y) {
                 // Check left and up
                 if (m_wallMatrix[posEx.x - 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y - 1] != 1) {
                     queue.push_back({{x,y}, 0});
                     m_distanceMatrix[x][y] = 0;
+                    continue;
                 }
             }
 
@@ -313,6 +318,7 @@ void MazeSolver::floodFillBlind() {
                 if (m_wallMatrix[posEx.x + 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y + 1] != 1) {
                     queue.push_back({{x,y}, 0});
                     m_distanceMatrix[x][y] = 0;
+                    continue;
                 }
             }
 
@@ -321,6 +327,7 @@ void MazeSolver::floodFillBlind() {
                 if (m_wallMatrix[posEx.x - 1][posEx.y] != 1) {
                     queue.push_back({{x,y}, 0});
                     m_distanceMatrix[x][y] = 0;
+                    continue;
                 }
             }
 
@@ -329,6 +336,7 @@ void MazeSolver::floodFillBlind() {
                 if (m_wallMatrix[posEx.x + 1][posEx.y] != 1) {
                     queue.push_back({{x,y}, 0});
                     m_distanceMatrix[x][y] = 0;           
+                    continue;
                 }
             }
 
@@ -337,6 +345,7 @@ void MazeSolver::floodFillBlind() {
                 if (m_wallMatrix[posEx.x][posEx.y - 1] != 1) {
                     queue.push_back({{x,y}, 0});
                     m_distanceMatrix[x][y] = 0;
+                    continue;
                 }
             }
 
@@ -345,13 +354,23 @@ void MazeSolver::floodFillBlind() {
                 if (m_wallMatrix[posEx.x][posEx.y + 1] != 1) {
                     queue.push_back({{x,y}, 0});
                     m_distanceMatrix[x][y] = 0;
+                    continue;
                 }
+            }
+
+            if (m_currPos.x == x && m_currPos.y == y) {
+                m_atExit = false;
             }
 
         }
     }
 
     floodFill(queue);
+}
+
+
+bool MazeSolver::atExit() {
+    return m_atExit;
 }
 
 void MazeSolver::floodFill(const vec2<int>& destination) {
@@ -447,6 +466,9 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
     if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
         // FloodFill with all possible exits set to 0
         floodFillBlind();
+
+        if (atExit())
+            return m_currPos;
     } 
 
     moves_t moves = getPossibleMoves();

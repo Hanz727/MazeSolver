@@ -71,6 +71,7 @@ private:
     Stage m_blindStage = Stage::BOUND_SEARCH;
     vec2<int> m_topLeft{999,999};     // TOP LEFT corner of maze, found by bound search
     vec2<int> m_bottomRight{-1,-1};
+    bool m_atExit = false;
 
     void clearDistanceMatrix();
     void clearWallMatrix();
@@ -133,6 +134,8 @@ public:
     vec2<int> getDirOffset(const CompassDir dir) const;
     vec2<int> getNextMove(const double carBearing = 0.);
     moves_t getPossibleMoves() const;
+
+    bool atExit();
     
     vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angle) const;
 
