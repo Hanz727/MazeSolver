@@ -290,12 +290,9 @@ void MazeSolver::floodFillBlind() {
     FixedDeque<FloodFillNode> queue(m_MazeWidth*m_MazeHeight);
 
     // Add all possible exits
-    for (int x = 0; x < m_MazeWidth; x++) {
-        for (int y = 0; y < m_MazeHeight; y++) {
+    for (int x = m_topLeft.x; x <= m_bottomRight.x; x++) {
+        for (int y = m_topLeft.y; y <= m_bottomRight.y; y++) {
             if (x != m_topLeft.x && x != m_bottomRight.x && y != m_topLeft.y && y != m_bottomRight.y)
-                continue;
-
-            if (x < m_topLeft.x || x > m_bottomRight.x || y < m_topLeft.y || y > m_bottomRight.y)
                 continue;
             
             vec2<int> posEx = posToPosEx(vec2<int>{x, y});
