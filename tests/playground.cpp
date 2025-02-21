@@ -17,9 +17,13 @@ int main() {
 
     mazeSolver.markWall({ 6,6 }, 10, CompassDir::South); 
     mazeSolver.markWall({ 6+6,6 }, 10, CompassDir::East); 
-    //mazeSolver.markWall({ 6+6,6 }, 10, CompassDir::South); 
+    mazeSolver.markWall({ 6+6,3 }, 10, CompassDir::East); 
     mazeSolver.markWall({ 8,0 }, 10, CompassDir::North); 
+    mazeSolver.markWall({ 9,0 }, 10, CompassDir::North); 
     mazeSolver.markWall({ 6,6 }, 10, CompassDir::West); 
+    mazeSolver.markWall({ 6,3 }, 10, CompassDir::West); 
+    
+    mazeSolver.setCurrPos({9,3});
 
     int steps = 10;
     double angle = 0.;

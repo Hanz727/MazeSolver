@@ -1,9 +1,17 @@
 #include "MazeSolver.h"
+#include <string.h>
 #include <math.h>
 
 #ifdef DEBUG
 #include <iostream>
 #include <iomanip>
+#endif
+#ifndef min
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef max
+#define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
 MazeSolver::MazeSolver(
@@ -60,11 +68,8 @@ void MazeSolver::init(
 }
 
 void MazeSolver::clearDistanceMatrix() {
-    for (int x = 0; x < m_MazeWidth; x++) {
-        for (int y = 0; y < m_MazeHeight; y++) {
-            m_distanceMatrix[x][y] = -1;
-        }
-    }
+    // Warning memset only works properly for 0 and -1.
+    memset(m_distanceMatrix, -1, sizeof(m_distanceMatrix));
 }
 
 void MazeSolver::clearWallMatrix() {
@@ -100,6 +105,16 @@ void MazeSolver::setMovePriority(const moves_t priority[4]) {
     }
 }
 
+uint8_t MazeSolver::dirToIndex(CompassDir dir) const {
+    if (dir == North)
+        return 0;
+    if (dir == South)
+        return 1;
+    if (dir == East)
+        return 2;
+    return 3;
+}
+
 uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad) const {
     uint8_t* order = new uint8_t[4]();
     *size = 0;
@@ -118,7 +133,7 @@ uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetR
             if (offsetRad != 0.) {
                 moves_t newDirectionI = order[i];
                 moves_t newDirectionJ = order[j];
-                
+
                 // I will not explain...
                 newDirectionI = radiansToDirection(
                         directionToRadians((CompassDir)(1 << order[i]))
@@ -129,8 +144,9 @@ uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetR
                         directionToRadians((CompassDir)(1 << order[j]))
                         + (2*PI_d - offsetRad)
                         );
-                newIndexI = log((int)newDirectionI)/log(2);
-                newIndexJ = log((int)newDirectionJ)/log(2);
+
+                newIndexI = dirToIndex((CompassDir)newDirectionJ);
+                newIndexJ = dirToIndex((CompassDir)newDirectionI);
             } 
 
             if (m_movePriority[newIndexI] > m_movePriority[newIndexJ]) {
@@ -287,78 +303,34 @@ void MazeSolver::floodFillUnvisited() {
 
 void MazeSolver::floodFillBlind() {
     clearDistanceMatrix();
-    FixedDeque<FloodFillNode> queue(m_MazeWidth*m_MazeHeight);
+    FixedDeque<FloodFillNode> queue(m_MazeWidth * m_MazeHeight);
+
 
     // Add all possible exits
-    for (int x = m_topLeft.x; x <= m_bottomRight.x; x++) {
-        for (int y = m_topLeft.y; y <= m_bottomRight.y; y++) {
+    for (int x = m_topLeft.x; x <= m_bottomRight.x; ++x) {
+        for (int y = m_topLeft.y; y <= m_bottomRight.y; ++y) {
+            // Skip non-boundary cells
             if (x != m_topLeft.x && x != m_bottomRight.x && y != m_topLeft.y && y != m_bottomRight.y)
                 continue;
-            
-            vec2<int> posEx = posToPosEx(vec2<int>{x, y});
 
             if (m_currPos.x == x && m_currPos.y == y) {
                 m_atExit = true;
             }
+            vec2<int> posEx = posToPosEx(vec2<int>{x, y});
 
-            if (x == m_topLeft.x && y == m_topLeft.y) {
-                // Check left and up
-                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y - 1] != 1) {
-                    queue.push_back({{x,y}, 0});
-                    m_distanceMatrix[x][y] = 0;
-                    continue;
-                }
-            }
-
-            if (x == m_bottomRight.x && y == m_bottomRight.y) {
-                // Check bottom and right
-                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1 || m_wallMatrix[posEx.x][posEx.y + 1] != 1) {
-                    queue.push_back({{x,y}, 0});
-                    m_distanceMatrix[x][y] = 0;
-                    continue;
-                }
-            }
-
-            if (x == m_topLeft.x) {
-                // Check left
-                if (m_wallMatrix[posEx.x - 1][posEx.y] != 1) {
-                    queue.push_back({{x,y}, 0});
-                    m_distanceMatrix[x][y] = 0;
-                    continue;
-                }
-            }
-
-            if (x == m_bottomRight.x) {
-                // Check right
-                if (m_wallMatrix[posEx.x + 1][posEx.y] != 1) {
-                    queue.push_back({{x,y}, 0});
-                    m_distanceMatrix[x][y] = 0;           
-                    continue;
-                }
-            }
-
-            if (y == m_topLeft.y) {
-                // Check up
-                if (m_wallMatrix[posEx.x][posEx.y - 1] != 1) {
-                    queue.push_back({{x,y}, 0});
-                    m_distanceMatrix[x][y] = 0;
-                    continue;
-                }
-            }
-
-            if (y == m_bottomRight.y) {
-                // Check down
-                if (m_wallMatrix[posEx.x][posEx.y + 1] != 1) {
-                    queue.push_back({{x,y}, 0});
-                    m_distanceMatrix[x][y] = 0;
-                    continue;
-                }
+            // Check if this boundary cell is connected to the outside
+            if ((x == m_topLeft.x && m_wallMatrix[posEx.x - 1][posEx.y] != 1) ||  // Left
+                (x == m_bottomRight.x && m_wallMatrix[posEx.x + 1][posEx.y] != 1) || // Right
+                (y == m_topLeft.y && m_wallMatrix[posEx.x][posEx.y - 1] != 1) || // Up
+                (y == m_bottomRight.y && m_wallMatrix[posEx.x][posEx.y + 1] != 1)) { // Down
+                queue.push_back({{x, y}, 0});
+                m_distanceMatrix[x][y] = 0;
+                continue;
             }
 
             if (m_currPos.x == x && m_currPos.y == y) {
                 m_atExit = false;
             }
-
         }
     }
 
@@ -381,7 +353,7 @@ void MazeSolver::floodFill(const vec2<int>& destination) {
 }
 
 vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
-    return m_directions[(int)(log((int)dir) / log(2))];
+    return m_directions[dirToIndex(dir)];
 }
 
 double MazeSolver::directionToRadians(CompassDir dir) const {
@@ -472,6 +444,10 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
 
     uint8_t orderSize;
     uint8_t* order = getMovesOrder(moves, &orderSize, carBearing); 
+    
+    if (orderSize == 0) {
+        clearWallMatrix();
+    }
 
     vec2<int> bestMove{ -1 };
     int bestDist = 9999;

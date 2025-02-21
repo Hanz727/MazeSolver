@@ -82,6 +82,7 @@ private:
     void floodFillUnvisited();
 
     bool findBounds();
+    uint8_t dirToIndex(CompassDir dir) const;
     uint8_t* getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad = 0.) const;
 public:
     
