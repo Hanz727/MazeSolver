@@ -17,11 +17,11 @@ int main() {
 
     mazeSolver.markWall({ 6,6 }, 10, CompassDir::South); 
     mazeSolver.markWall({ 6+6,6 }, 10, CompassDir::East); 
-    mazeSolver.markWall({ 6+6,6 }, 10, CompassDir::South); 
+    //mazeSolver.markWall({ 6+6,6 }, 10, CompassDir::South); 
     mazeSolver.markWall({ 8,0 }, 10, CompassDir::North); 
     mazeSolver.markWall({ 6,6 }, 10, CompassDir::West); 
 
-    int steps = 2;
+    int steps = 10;
     double angle = 0.;
     for (int i = 0; i < steps; i++) {
 	    vec2<int> nm = mazeSolver.getNextMove(angle);

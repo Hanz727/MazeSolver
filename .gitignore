@@ -1,3 +1,11 @@
 .git/*
 *.exe
 *.o
+.vs
+*.sln
+*.vcxproj
+*.vcxproj.filters 
+*.vcxproj.user
+CppProperties.json
+x64/
+x86/
