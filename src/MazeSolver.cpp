@@ -412,13 +412,15 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
     // TODO: Could optimize this to floodfill only once per currPos
 
     if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
-        // FloodFill with all unvisited set to 0
-        floodFillUnvisited();
-
         // Look for bounds to switch stage
         findBounds();
-        
     } 
+
+    // findBounds may change the stage
+    if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
+        // FloodFill with all unvisited set to 0
+        floodFillUnvisited();
+    }
 
     if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
         // FloodFill with all possible exits set to 0
