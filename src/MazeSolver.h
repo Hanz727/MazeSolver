@@ -1,10 +1,7 @@
 #pragma once
 #include "vec2.h"
 #include "FixedDeque.h"
-
-#if defined(__has_include) && __has_include(<stdint.h>)
-    #include <stdint.h>
-#endif
+#include "pch.h"
 
 #define PI_d 3.141592653589793
 #define INVALID_ANGLE -123.45 

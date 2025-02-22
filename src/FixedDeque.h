@@ -1,10 +1,5 @@
 #pragma once
-
-#ifdef DEBUG
-    #include <iostream>
-#else
-    #include <Arduino.h>
-#endif
+#include "pch.h"
 
 template <typename T>
 class FixedDeque {

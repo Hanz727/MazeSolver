@@ -1,10 +1,6 @@
 #pragma once
 #include <math.h>
 
-//#ifndef PI
-//#define PI 3.14159265358979323846
-//#endif 
-
 // Can't use <type_traits> on arduino IDE so gotta do this...
 template <typename T, typename U>
 using common_type_t = decltype(T() + U()); 

@@ -1,11 +1,6 @@
 #include "MazeSolver.h"
 #include <string.h>
-#include <math.h>
-
-#ifdef DEBUG
-#include <iostream>
-#include <iomanip>
-#endif
+#include "pch.h"
 
 MazeSolver::MazeSolver(
     const double wallWidth,
@@ -56,6 +51,9 @@ void MazeSolver::init(
     m_MazeHeightEx = mazeHeight * 2 + 1;
     m_MazeWidthEx = mazeHeight * 2 + 1;
 
+    assert(mazeHeight <= 32);
+    assert(mazeWidth <= 32);
+    
     clearDistanceMatrix();
     clearWallMatrix();
 }
@@ -102,6 +100,8 @@ uint8_t MazeSolver::dirToIndex(CompassDir dir) const {
 }
 
 uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad) const {
+    assert(_moves <= 15);
+
     uint8_t* order = new uint8_t[4]();
     *size = 0;
 
@@ -184,6 +184,7 @@ void MazeSolver::setExplorationMode(bool toggle) {
 }
 
 void MazeSolver::setCurrPos(const vec2<double>& pos) {
+    assert((abs(m_currPos.x - pos.x) + abs(m_currPos.y-pos.y)) <= 1.01);
     m_currPos = pos;
     vec2<int> posR = roundPos(pos);
     m_visitedMatrix[posR.x][posR.y] = 1;
@@ -352,6 +353,7 @@ double MazeSolver::directionToRadians(CompassDir dir) const {
     if (dir == West)
         return 1.5*PI_d;
 
+    assert(0);
     return INVALID_ANGLE;
 }
 
