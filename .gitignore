@@ -9,3 +9,4 @@
 CppProperties.json
 x64/
 x86/
+.cache/

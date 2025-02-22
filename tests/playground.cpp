@@ -11,19 +11,26 @@ int main() {
 		7 * 2 - 1,
 		7 * 2 - 1,
 		{ 7-1,7-1 },
-		{ -1, -1 },
-	    true 
+		{ 0, 0 },
+	    true
     );
 
     mazeSolver.markWall({ 6,6 }, 10, CompassDir::South); 
     mazeSolver.markWall({ 6+6,6 }, 10, CompassDir::East); 
     mazeSolver.markWall({ 6+6,3 }, 10, CompassDir::East); 
-    mazeSolver.markWall({ 8,0 }, 10, CompassDir::North); 
-    mazeSolver.markWall({ 9,0 }, 10, CompassDir::North); 
+    //mazeSolver.markWall({ 8,0 }, 10, CompassDir::North); 
+    //mazeSolver.markWall({ 9,0 }, 10, CompassDir::North); 
     mazeSolver.markWall({ 6,6 }, 10, CompassDir::West); 
     mazeSolver.markWall({ 6,3 }, 10, CompassDir::West); 
     
     mazeSolver.setCurrPos({9,3});
+    
+    //uint8_t orderCount;
+    //uint8_t* order = mazeSolver.getMovesOrder(15, &orderCount, 0.5*PI_d);
+    //for (int i = 0; i < orderCount; i++) {
+    //    std::cout << (1 << order[i]) << "\n";
+    //}
+    //delete[] order;
 
     int steps = 10;
     double angle = 0.;

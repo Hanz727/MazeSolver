@@ -75,7 +75,6 @@ private:
 
     void clearDistanceMatrix();
     void clearWallMatrix();
-
     
     void floodFill(FixedDeque<FloodFillNode>& queue);
     void floodFillBlind();
@@ -83,9 +82,19 @@ private:
 
     bool findBounds();
     uint8_t dirToIndex(CompassDir dir) const;
+private:
+    vec2<double> posToCm(const vec2<double>& pos) const;
+    vec2<double> cmToPos(const vec2<double>& cm) const;
+    vec2<int> roundPos(const vec2<double>& pos) const;
+
+    CompassDir radiansToDirection(double angleRad) const;
+    double directionToRadians(CompassDir dir) const;
+
+    vec2<int> posToPosEx(const vec2<double>& pos) const;
+    vec2<double> posExToPos(const vec2<int>& posEx) const;
+
     uint8_t* getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad = 0.) const;
 public:
-    
     MazeSolver(const double wallWidth,
         const double cellWidth,
         const double cellHeight,
@@ -117,16 +126,7 @@ public:
     const vec2<int>& getStartPos() const; 
     const vec2<double>& getCurrPos() const; 
     const vec2<int>& getEndPos() const; 
-
-    vec2<double> posToCm(const vec2<double>& pos) const;
-    vec2<double> cmToPos(const vec2<double>& cm) const;
-    vec2<int> roundPos(const vec2<double>& pos) const;
-
-    CompassDir radiansToDirection(double angleRad) const;
-    double directionToRadians(CompassDir dir) const;
-
-    vec2<int> posToPosEx(const vec2<double>& pos) const;
-    vec2<double> posExToPos(const vec2<int>& posEx) const;
+    bool atExit();
 
     void markWall(const vec2<double>& pos, const double distance, const CompassDir dir);
     void markWall(const vec2<double>& pos, const double distance, const double angleRad);
@@ -136,8 +136,6 @@ public:
     vec2<int> getNextMove(const double carBearing = 0.);
     moves_t getPossibleMoves() const;
 
-    bool atExit();
-    
     vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angle) const;
 
     void printWalls() const;

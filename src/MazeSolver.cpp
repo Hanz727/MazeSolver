@@ -6,13 +6,6 @@
 #include <iostream>
 #include <iomanip>
 #endif
-#ifndef min
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-#ifndef max
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#endif
 
 MazeSolver::MazeSolver(
     const double wallWidth,
@@ -73,23 +66,16 @@ void MazeSolver::clearDistanceMatrix() {
 }
 
 void MazeSolver::clearWallMatrix() {
+    memset(m_wallMatrix, 0, sizeof(m_wallMatrix));
+    if (m_blind)
+        return;
+
     for (int x = 0; x < m_MazeWidthEx; x++) {
         for (int y = 0; y < m_MazeHeightEx; y++) {
-            bool wallState = 0;
-            
-            // initialize all walls to zero in blind mode
-            if (m_blind) {
-                m_wallMatrix[x][y] = wallState;
-                continue; 
-            }
+            if (x != m_MazeWidthEx - 1 && y != m_MazeHeightEx - 1 && x != 0 && y != 0)
+                continue;
 
-            if (x == 0 || y == 0)
-                wallState = 1;
-
-            if (x == m_MazeWidthEx - 1 || y == m_MazeHeightEx - 1)
-                wallState = 1;
-
-            m_wallMatrix[x][y] = wallState;
+            m_wallMatrix[x][y] = 1;
         }
     }
 }
@@ -145,8 +131,8 @@ uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetR
                         + (2*PI_d - offsetRad)
                         );
 
-                newIndexI = dirToIndex((CompassDir)newDirectionJ);
-                newIndexJ = dirToIndex((CompassDir)newDirectionI);
+                newIndexI = dirToIndex((CompassDir)newDirectionI);
+                newIndexJ = dirToIndex((CompassDir)newDirectionJ);
             } 
 
             if (m_movePriority[newIndexI] > m_movePriority[newIndexJ]) {
