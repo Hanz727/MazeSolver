@@ -6,9 +6,9 @@
 #define PI_d 3.141592653589793
 #define INVALID_ANGLE -123.45 
 
-// Max maze size is fixed on 32 by 32
-using matrix2d = int8_t[32][32];
-using matrix2dEx = int8_t[65][65];
+// Max maze size is fixed on 10 by 10
+using matrix2d = int8_t[19][19];
+using matrix2dEx = int8_t[39][39];
 using moves_t = uint8_t;
 
 enum CompassDir : uint8_t {
@@ -87,7 +87,10 @@ private:
     CompassDir radiansToDirection(double angleRad) const;
     double directionToRadians(CompassDir dir) const;
 
+    // This is int because this fuction is only used to get the wall position which must be int.
+    // So it rounds to the neasrest wall
     vec2<int> posToPosEx(const vec2<double>& pos) const;
+
     vec2<double> posExToPos(const vec2<int>& posEx) const;
 
     uint8_t* getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad = 0.) const;
