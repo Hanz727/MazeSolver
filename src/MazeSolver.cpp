@@ -49,7 +49,7 @@ void MazeSolver::init(
     m_blind = blind;
     
     m_MazeHeightEx = mazeHeight * 2 + 1;
-    m_MazeWidthEx = mazeHeight * 2 + 1;
+    m_MazeWidthEx = mazeWidth * 2 + 1;
 
     assert(mazeHeight <= 32);
     assert(mazeWidth <= 32);
@@ -99,14 +99,14 @@ uint8_t MazeSolver::dirToIndex(CompassDir dir) const {
     return 3;
 }
 
-uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad) const {
-    assert(_moves <= 15);
+uint8_t* MazeSolver::getMovesOrder(moves_t moves, uint8_t* size, double offsetRad) const {
+    assert(moves <= 15);
 
     uint8_t* order = new uint8_t[4]();
     *size = 0;
 
     for (int i = 0; i < 4; i++) {
-        if (_moves & (1 << i))
+        if (moves & (1 << i))
             order[(*size)++] = i;
     }
     
@@ -120,16 +120,15 @@ uint8_t* MazeSolver::getMovesOrder(moves_t _moves, uint8_t* size, double offsetR
                 moves_t newDirectionI = order[i];
                 moves_t newDirectionJ = order[j];
 
-                // I will not explain...
                 newDirectionI = radiansToDirection(
                         directionToRadians((CompassDir)(1 << order[i]))
                         + (2*PI_d - offsetRad)
-                        );
+                );
 
                 newDirectionJ = radiansToDirection(
                         directionToRadians((CompassDir)(1 << order[j]))
                         + (2*PI_d - offsetRad)
-                        );
+                );
 
                 newIndexI = dirToIndex((CompassDir)newDirectionI);
                 newIndexJ = dirToIndex((CompassDir)newDirectionJ);
@@ -291,7 +290,6 @@ void MazeSolver::floodFillUnvisited() {
 void MazeSolver::floodFillBlind() {
     clearDistanceMatrix();
     FixedDeque<FloodFillNode> queue(m_MazeWidth * m_MazeHeight);
-
 
     // Add all possible exits
     for (int x = m_topLeft.x; x <= m_bottomRight.x; ++x) {

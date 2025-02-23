@@ -51,7 +51,7 @@ private:
     };
 
     // Priority, Lower number = higher priority
-    moves_t m_movePriority[4] = {
+    uint8_t m_movePriority[4] = {
         1, // N
         3, // S
         0, // E
