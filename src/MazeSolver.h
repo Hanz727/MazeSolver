@@ -136,7 +136,7 @@ public:
     vec2<int> getNextMove(const double carBearing = 0.);
     moves_t getPossibleMoves() const;
 
-    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angle) const;
+    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angleRad) const;
 
     void printWalls() const;
     void printDists() const;
