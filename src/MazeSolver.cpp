@@ -79,14 +79,14 @@ void MazeSolver::clearWallMatrix() {
 }
 
 
-vec2<int> MazeSolver::projectPos(const vec2<double>& pos, const double distance, const double angleRad) const {
+vec2<int> MazeSolver::projectPos(const vec2<double>& pos, double distance, double angleRad) const {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);
     assert(distance > 0);
     return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*sin(angleRad), distance*cos(angleRad)}));
 }
 
-void MazeSolver::setMovePriority(const moves_t priority[4]) {
+void MazeSolver::setMovePriority(directionFlags priority[4]) {
     for (int i = 0; i < 4; i++) {
         m_movePriority[i] = priority[i];
     }
@@ -102,7 +102,7 @@ uint8_t MazeSolver::dirToIndex(CompassDir dir) const {
     return 3;
 }
 
-uint8_t* MazeSolver::getMovesOrder(moves_t moves, uint8_t* size, double offsetRad) const {
+uint8_t* MazeSolver::getMovesOrder(directionFlags moves, uint8_t* size, double offsetRad) const {
     assert(moves <= 15);
     assert(size != nullptr);
 
@@ -121,8 +121,8 @@ uint8_t* MazeSolver::getMovesOrder(moves_t moves, uint8_t* size, double offsetRa
             uint8_t newIndexJ = order[j];
 
             if (offsetRad != 0.) {
-                moves_t newDirectionI = order[i];
-                moves_t newDirectionJ = order[j];
+                CompassDir newDirectionI;
+                CompassDir newDirectionJ;
 
                 newDirectionI = radiansToDirection(
                         directionToRadians((CompassDir)(1 << order[i]))
@@ -134,8 +134,8 @@ uint8_t* MazeSolver::getMovesOrder(moves_t moves, uint8_t* size, double offsetRa
                         + (2*PI_d - offsetRad)
                 );
 
-                newIndexI = dirToIndex((CompassDir)newDirectionI);
-                newIndexJ = dirToIndex((CompassDir)newDirectionJ);
+                newIndexI = dirToIndex(newDirectionI);
+                newIndexJ = dirToIndex(newDirectionJ);
             } 
 
             if (m_movePriority[newIndexI] > m_movePriority[newIndexJ]) {
@@ -228,7 +228,7 @@ const vec2<double>& MazeSolver::getCurrPos() const {
 //   to calculate the position of the wall based on the direction.
 // - dir: The direction from the current position in which the wall is located, 
 //   represented by the CompassDir enum (e.g., North, South, East, West). Where north goes towards y = 0 and West goes to x = 0
-void MazeSolver::markWall(const vec2 <double>& pos, const double distance, const CompassDir dir) {
+void MazeSolver::markWall(const vec2 <double>& pos, double distance, CompassDir dir) {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
     setCurrPos(pos);
@@ -249,7 +249,7 @@ void MazeSolver::markWall(const vec2 <double>& pos, const double distance, const
 //   to calculate the position of the wall based on the direction.
 // - angleRad: The compass angle from the center of the car, 0 is North, 1/2pi is East, pi is South, 3/2pi is West. 
 //             The angle is not relative to the car!
-void MazeSolver::markWall(const vec2<double>& pos, const double distance, const double angleRad) {
+void MazeSolver::markWall(const vec2<double>& pos, double distance, double angleRad) {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
     setCurrPos(pos);
@@ -362,7 +362,7 @@ void MazeSolver::floodFill(const vec2<int>& destination) {
     floodFill(queue);
 }
 
-vec2<int> MazeSolver::getDirOffset(const CompassDir dir) const {
+vec2<int> MazeSolver::getDirOffset(CompassDir dir) const {
     return m_directions[dirToIndex(dir)];
 }
 
@@ -420,7 +420,7 @@ bool MazeSolver::findBounds() {
 
             if (((m_bottomRight.x - m_topLeft.x + 1) >= ((m_mazeWidth + 1) / 2)) &&
                 ((m_bottomRight.y - m_topLeft.y + 1) >= ((m_mazeHeight + 1) / 2))) {
-                m_blindStage = Stage::FOLLOW_SIDES;
+                m_blindStage = Stage::EXIT_SEARCH;
                 return true;
             }
 
@@ -429,7 +429,7 @@ bool MazeSolver::findBounds() {
     return false;
 }
 
-vec2<int> MazeSolver::getNextMove(const double carBearing) {
+vec2<int> MazeSolver::getNextMove(double carBearing) {
     static vec2<int> lastMove = roundPos(m_currPos);
 
     // TODO: Could optimize this to floodfill only once per currPos
@@ -445,7 +445,7 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
         floodFillUnvisited();
     }
 
-    if (m_blind && m_blindStage == Stage::FOLLOW_SIDES) {
+    if (m_blind && m_blindStage == Stage::EXIT_SEARCH) {
         // FloodFill with all possible exits set to 0
         floodFillBorders();
 
@@ -453,7 +453,7 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
             return m_currPos;
     } 
 
-    moves_t moves = getPossibleMoves();
+    directionFlags moves = getPossibleMoves();
 
     uint8_t orderSize;
     uint8_t* order = getMovesOrder(moves, &orderSize, carBearing); 
@@ -466,20 +466,16 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
     int bestDist = 9999;
     
     for (int i = 0; i < orderSize; i++) {
-        moves_t dir = moves & (1 << order[i]);
+        CompassDir dir = (CompassDir)(moves & (1 << order[i]));
 
-        if (!dir)
-            continue;
+        vec2<int> newPos = roundPos(m_currPos) + getDirOffset(dir);
 
-        vec2<int> newPos = roundPos(m_currPos) + getDirOffset((CompassDir)dir);
-
-        // Skip previous move
         if (newPos == lastMove)
             continue;
 
         int dist = m_distanceMatrix[newPos.x][newPos.y];
-        
         bool visited = m_visitedMatrix[newPos.x][newPos.y]; 
+
         if (!m_explorationMode && !visited)
             continue; 
 
@@ -493,17 +489,14 @@ vec2<int> MazeSolver::getNextMove(const double carBearing) {
     if (m_distanceMatrix[lastMove.x][lastMove.y] < bestDist)
         bestMove = lastMove;
 
-    // free memory
     delete[] order;
     
-    // TODO: check if this isn't broken
     lastMove = bestMove;
-
     return bestMove;
 }
 
-moves_t MazeSolver::getPossibleMoves() const {
-    moves_t out = 0;
+directionFlags MazeSolver::getPossibleMoves() const {
+    directionFlags out = 0;
     for (int i = 0; i < 4; i++) {
         vec2<int> wallPos = posToPosEx(m_currPos) + m_directions[i];
         if (m_wallMatrix[wallPos.x][wallPos.y] == 1)

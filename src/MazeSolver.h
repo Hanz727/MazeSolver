@@ -9,7 +9,8 @@
 // Max maze size is fixed on 10 by 10
 using matrix2d = int8_t[19][19];
 using matrix2dEx = int8_t[39][39];
-using moves_t = uint8_t;
+
+using directionFlags = uint8_t;
 
 enum CompassDir : uint8_t {
     North = (1 << 0),
@@ -20,7 +21,7 @@ enum CompassDir : uint8_t {
 
 enum class Stage : uint8_t {
     BOUND_SEARCH, // NOTHING IS KNOWN YET
-    FOLLOW_SIDES  // WE KNOW THE BOUNDS
+    EXIT_SEARCH  // WE KNOW THE BOUNDS
 };
 
 struct FloodFillNode {
@@ -87,13 +88,13 @@ private:
     CompassDir radiansToDirection(double angleRad) const;
     double directionToRadians(CompassDir dir) const;
 
-    // This is int because this fuction is only used to get the wall position which must be int.
-    // So it rounds to the neasrest wall
+    // This is int because this function is only used to get the wall position which must be int.
+    // So it rounds to the nearest wall
     vec2<int> posToPosEx(const vec2<double>& pos) const;
 
     vec2<double> posExToPos(const vec2<int>& posEx) const;
 
-    uint8_t* getMovesOrder(moves_t _moves, uint8_t* size, double offsetRad = 0.) const;
+    uint8_t* getMovesOrder(directionFlags directions, uint8_t* size, double offsetRad = 0.) const;
 public:
     MazeSolver(const double wallWidth,
         const double cellWidth,
@@ -119,7 +120,7 @@ public:
         const bool blind = false
     );
 
-    void setMovePriority(const moves_t priority[4]);
+    void setMovePriority(directionFlags priority[4]);
     void setExplorationMode(bool toggle);
     void setCurrPos(const vec2<double>& pos);
     
@@ -128,15 +129,15 @@ public:
     const vec2<int>& getEndPos() const; 
     bool atExit();
 
-    void markWall(const vec2<double>& pos, const double distance, const CompassDir dir);
-    void markWall(const vec2<double>& pos, const double distance, const double angleRad);
+    void markWall(const vec2<double>& pos, double distance, CompassDir dir);
+    void markWall(const vec2<double>& pos, double distance, double angleRad);
     void floodFill(const vec2<int>& destination);
 
-    vec2<int> getDirOffset(const CompassDir dir) const;
-    vec2<int> getNextMove(const double carBearing = 0.);
-    moves_t getPossibleMoves() const;
+    vec2<int> getDirOffset(CompassDir dir) const;
+    vec2<int> getNextMove(double carBearing = 0.);
+    directionFlags getPossibleMoves() const;
 
-    vec2<int> projectPos(const vec2<double>& pos, const double distance, const double angleRad) const;
+    vec2<int> projectPos(const vec2<double>& pos, double distance, double angleRad) const;
 
     void printWalls() const;
     void printDists() const;
