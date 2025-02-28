@@ -34,10 +34,10 @@ private:
     double m_cellWidth;
     double m_cellHeight;
 
-    uint8_t m_MazeWidth;
-    uint8_t m_MazeHeight;
-    uint8_t m_MazeWidthEx;
-    uint8_t m_MazeHeightEx;
+    uint8_t m_mazeWidth;
+    uint8_t m_mazeHeight;
+    uint8_t m_mazeWidthEx;
+    uint8_t m_mazeHeightEx;
 
     matrix2d m_distanceMatrix{};
     matrix2d m_visitedMatrix{};
@@ -74,7 +74,7 @@ private:
     void clearWallMatrix();
     
     void floodFill(FixedDeque<FloodFillNode>& queue);
-    void floodFillBlind();
+    void floodFillBorders();
     void floodFillUnvisited();
 
     bool findBounds();
