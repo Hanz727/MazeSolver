@@ -316,7 +316,6 @@ void MazeSolver::floodFillBorders() {
     clearDistanceMatrix();
     FixedDeque<FloodFillNode> queue(m_mazeWidth * m_mazeHeight);
 
-    // Add all possible exits
     for (int x = m_topLeft.x; x <= m_bottomRight.x; ++x) {
         for (int y = m_topLeft.y; y <= m_bottomRight.y; ++y) {
             // Skip non-boundary cells
@@ -328,7 +327,6 @@ void MazeSolver::floodFillBorders() {
             }
             vec2<int> posEx = posToPosEx(vec2<int>{x, y});
 
-            // Check if this boundary cell is connected to the outside
             if ((x == m_topLeft.x && m_wallMatrix[posEx.x - 1][posEx.y] != 1) ||  // Left
                 (x == m_bottomRight.x && m_wallMatrix[posEx.x + 1][posEx.y] != 1) || // Right
                 (y == m_topLeft.y && m_wallMatrix[posEx.x][posEx.y - 1] != 1) || // Up
@@ -431,27 +429,27 @@ bool MazeSolver::findBounds() {
 
 vec2<int> MazeSolver::getNextMove(double carBearing) {
     static vec2<int> lastMove = roundPos(m_currPos);
+    static uint8_t recursionCount = 0;
+    
+    if (m_blind) {
+        if (m_blindStage == Stage::BOUND_SEARCH) {
+            // Look for bounds to switch stage
+            findBounds();
+        } 
 
-    // TODO: Could optimize this to floodfill only once per currPos
+        // findBounds may change the stage
+        if (m_blindStage == Stage::BOUND_SEARCH) {
+            floodFillUnvisited();
+        }
 
-    if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
-        // Look for bounds to switch stage
-        findBounds();
-    } 
+        if (m_blindStage == Stage::EXIT_SEARCH) {
+            floodFillBorders();
 
-    // findBounds may change the stage
-    if (m_blind && m_blindStage == Stage::BOUND_SEARCH) {
-        // FloodFill with all unvisited set to 0
-        floodFillUnvisited();
+            if (atExit()) {
+                return m_currPos;
+            }
+        } 
     }
-
-    if (m_blind && m_blindStage == Stage::EXIT_SEARCH) {
-        // FloodFill with all possible exits set to 0
-        floodFillBorders();
-
-        if (atExit())
-            return m_currPos;
-    } 
 
     directionFlags moves = getPossibleMoves();
 
@@ -460,7 +458,13 @@ vec2<int> MazeSolver::getNextMove(double carBearing) {
     
     if (orderSize == 0) {
         clearWallMatrix();
+
+        // only try calling the function again once
+        if (recursionCount++ == 0) {
+            return getNextMove(carBearing);
+        }
     }
+    recursionCount = 0;
 
     vec2<int> bestMove{ -1 };
     int bestDist = 9999;

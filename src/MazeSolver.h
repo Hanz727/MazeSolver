@@ -7,8 +7,8 @@
 #define INVALID_ANGLE -123.45 
 
 // Max maze size is fixed on 10 by 10
-using matrix2d = int8_t[19][19];
-using matrix2dEx = int8_t[39][39];
+using matrix2d = int8_t[10*2-1][10*2-1];
+using matrix2dEx = int8_t[10*4-1][10*4-1];
 
 using directionFlags = uint8_t;
 
@@ -91,7 +91,6 @@ private:
     // This is int because this function is only used to get the wall position which must be int.
     // So it rounds to the nearest wall
     vec2<int> posToPosEx(const vec2<double>& pos) const;
-
     vec2<double> posExToPos(const vec2<int>& posEx) const;
 
     uint8_t* getMovesOrder(directionFlags directions, uint8_t* size, double offsetRad = 0.) const;
@@ -142,3 +141,4 @@ public:
     void printWalls() const;
     void printDists() const;
 };
+
