@@ -10,7 +10,7 @@ int main() {
 		20.,
 		7 * 2 - 1,
 		7 * 2 - 1,
-		{ 7-1,7-1 },
+		{ 7-1+3,7-1-3 },
 		{ 0, 0 },
 	    true
     );
@@ -23,7 +23,6 @@ int main() {
     mazeSolver.markWall({ 6,6 }, 10, CompassDir::West); 
     mazeSolver.markWall({ 6,3 }, 10, CompassDir::West); 
     
-    mazeSolver.setCurrPos({9,3});
     
     //uint8_t orderCount;
     //uint8_t* order = mazeSolver.getMovesOrder(15, &orderCount, 0.5*PI_d);

@@ -13,7 +13,6 @@ MazeSolver::MazeSolver(
     const bool blind 
 )
 {
-    m_currPos = m_startPos;
 
     init(
         wallWidth,
@@ -54,6 +53,9 @@ void MazeSolver::init(
     assert(mazeHeight <= 32);
     assert(mazeWidth <= 32);
     
+    m_currPos = m_startPos;
+    m_visitedMatrix[m_startPos.x][m_startPos.y] = 1;
+
     clearDistanceMatrix();
     clearWallMatrix();
 }
