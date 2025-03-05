@@ -34,7 +34,7 @@ public:
             size--;
             return data[backIndex];
         }
-        return -1;
+        return {};
     }
 
 
