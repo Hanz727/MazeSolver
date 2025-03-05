@@ -231,13 +231,16 @@ const vec2<double>& MazeSolver::getCurrPos() const {
 void MazeSolver::markWall(const vec2 <double>& pos, double distance, CompassDir dir) {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
-    setCurrPos(pos);
+    //setCurrPos(pos);
 
     vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance, distance }*getDirOffset(dir));
     vec2<int> wallPosEx = posToPosEx(cmToPos(wallPosCm));
 
     // walls are only on even spots
     if (!(wallPosEx.x % 2 == 0 || wallPosEx.y % 2 == 0))
+        return;
+
+    if (wallPosEx.x < 0 || wallPosEx.y < 0)
         return;
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
@@ -252,13 +255,16 @@ void MazeSolver::markWall(const vec2 <double>& pos, double distance, CompassDir 
 void MazeSolver::markWall(const vec2<double>& pos, double distance, double angleRad) {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
-    setCurrPos(pos);
+    //setCurrPos(pos);
 
     vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance*sin(angleRad), distance*cos(angleRad) });
     vec2<int> wallPosEx = posToPosEx(cmToPos(wallPosCm));
 
     // walls are only on even spots
     if (!(wallPosEx.x % 2 == 0 || wallPosEx.y % 2 == 0))
+        return;
+
+    if (wallPosEx.x < 0 || wallPosEx.y < 0)
         return;
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
