@@ -404,9 +404,6 @@ bool MazeSolver::findBounds() {
 
             vec2<double> wallPos = posExToPos({x,y});
 
-            std::cout << wallPos.x << " " << wallPos.y << "\n";
-            std::cout << x << " " << y << "\n";
-            
             // left
             if (wallPos.x < m_topLeft.x && (m_currPos.x > wallPos.x))
                 m_topLeft.x = round(wallPos.x);
