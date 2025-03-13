@@ -1,4 +1,5 @@
 #include "MazeSolver.h"
+#include <iostream>
 #include <string.h>
 #include "pch.h"
 
@@ -192,7 +193,7 @@ vec2<double> MazeSolver::posExToPos(const vec2<int>& posEx) const {
     assert(posEx.x >= 0 && posEx.y >= 0);
     assert(posEx.x < m_mazeWidthEx && posEx.y < m_mazeHeightEx);    
 
-    return vec2<int>(
+    return vec2<double>(
         (posEx.x - 1.) / 2.,
         (posEx.y - 1.) / 2.
     );
@@ -402,24 +403,26 @@ bool MazeSolver::findBounds() {
             if (m_wallMatrix[x][y] != 1)
                 continue;
 
-            vec2<int> pos = posExToPos({x,y});
-            vec2<int> cellPosEx = posToPosEx(pos);
+            vec2<double> wallPos = posExToPos({x,y});
+
+            std::cout << wallPos.x << " " << wallPos.y << "\n";
+            std::cout << x << " " << y << "\n";
             
             // left
-            if (pos.x < m_topLeft.x && m_wallMatrix[cellPosEx.x-1][cellPosEx.y])
-                m_topLeft.x = pos.x;
+            if (wallPos.x < m_topLeft.x && (m_currPos.x > wallPos.x))
+                m_topLeft.x = round(wallPos.x);
             
             // up
-            if (pos.y < m_topLeft.y && m_wallMatrix[cellPosEx.x][cellPosEx.y-1])
-                m_topLeft.y = pos.y;
+            if (wallPos.y < m_topLeft.y && (m_currPos.y > wallPos.y)) 
+                m_topLeft.y = round(wallPos.y);
             
             // right
-            if (pos.x > m_bottomRight.x && m_wallMatrix[cellPosEx.x+1][cellPosEx.y])
-                m_bottomRight.x = pos.x;
+            if (wallPos.x > m_bottomRight.x && (m_currPos.x < wallPos.x))
+                m_bottomRight.x = (int)wallPos.x; // round down
             
             // bottom
-            if (pos.y > m_bottomRight.y && m_wallMatrix[cellPosEx.x][cellPosEx.y+1])
-                m_bottomRight.y = pos.y;
+            if (wallPos.y > m_bottomRight.y && (m_currPos.y < wallPos.y))
+                m_bottomRight.y = (int)wallPos.y; // round down
             
             if (m_bottomRight.x == -1 || m_bottomRight.y == -1 || m_topLeft.x == 999 || m_topLeft.y == 999)
                 continue;
