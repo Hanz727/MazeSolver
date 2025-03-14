@@ -6,10 +6,10 @@ MazeSolver::MazeSolver(
     const double wallWidth,
     const double cellWidth,
     const double cellHeight,
-    const uint8_t mazeWidth,
-    const uint8_t mazeHeight,
-    const vec2<int> startPos,
-    const vec2<int> endPos,
+    const int8_t mazeWidth,
+    const int8_t mazeHeight,
+    const vec2<int8_t> startPos,
+    const vec2<int8_t> endPos,
     const bool blind 
 )
 {
@@ -31,10 +31,10 @@ void MazeSolver::init(
         const double wallWidth,
         const double cellWidth,
         const double cellHeight,
-        const uint8_t mazeWidth,
-        const uint8_t mazeHeight,
-        const vec2<int> startPos,
-        const vec2<int> endPos,
+        const int8_t mazeWidth,
+        const int8_t mazeHeight,
+        const vec2<int8_t> startPos,
+        const vec2<int8_t> endPos,
         const bool blind
 ) {
 
@@ -70,8 +70,8 @@ void MazeSolver::clearWallMatrix() {
     if (m_blind)
         return;
 
-    for (int x = 0; x < m_mazeWidthEx; x++) {
-        for (int y = 0; y < m_mazeHeightEx; y++) {
+    for (int8_t x = 0; x < m_mazeWidthEx; x++) {
+        for (int8_t y = 0; y < m_mazeHeightEx; y++) {
             if (x != m_mazeWidthEx - 1 && y != m_mazeHeightEx - 1 && x != 0 && y != 0)
                 continue;
 
@@ -81,20 +81,20 @@ void MazeSolver::clearWallMatrix() {
 }
 
 
-vec2<int> MazeSolver::projectPos(const vec2<double>& pos, double distance, double angleRad) const {
+vec2<int8_t> MazeSolver::projectPos(const vec2<double>& pos, double distance, double angleRad) const {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);
     assert(distance > 0);
     return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*sin(angleRad), distance*cos(angleRad)}));
 }
 
-void MazeSolver::setMovePriority(directionFlags priority[4]) {
-    for (int i = 0; i < 4; i++) {
+void MazeSolver::setMovePriority(int8_t priority[4]) {
+    for (int8_t i = 0; i < 4; i++) {
         m_movePriority[i] = priority[i];
     }
 }
 
-uint8_t MazeSolver::dirToIndex(CompassDir dir) const {
+int8_t MazeSolver::dirToIndex(CompassDir dir) const {
     if (dir == North)
         return 0;
     if (dir == South)
@@ -104,23 +104,23 @@ uint8_t MazeSolver::dirToIndex(CompassDir dir) const {
     return 3;
 }
 
-uint8_t* MazeSolver::getMovesOrder(directionFlags moves, uint8_t* size, double offsetRad) const {
+int8_t* MazeSolver::getMovesOrder(directionFlags moves, int8_t* size, double offsetRad) const {
     assert(moves <= 15);
     assert(size != nullptr);
 
-    uint8_t* order = new uint8_t[4]();
+    int8_t* order = new int8_t[4]();
     *size = 0;
 
-    for (int i = 0; i < 4; i++) {
+    for (int8_t i = 0; i < 4; i++) {
         if (moves & (1 << i))
             order[(*size)++] = i;
     }
     
     // Sort moves according to priority
-    for (int i = 0; i < *size; i++) {
-        for (int j = i + 1; j < *size; j++) {
-            uint8_t newIndexI = order[i]; 
-            uint8_t newIndexJ = order[j];
+    for (int8_t i = 0; i < *size; i++) {
+        for (int8_t j = i + 1; j < *size; j++) {
+            int8_t newIndexI = order[i]; 
+            int8_t newIndexJ = order[j];
 
             if (offsetRad != 0.) {
                 CompassDir newDirectionI;
@@ -142,7 +142,7 @@ uint8_t* MazeSolver::getMovesOrder(directionFlags moves, uint8_t* size, double o
 
             if (m_movePriority[newIndexI] > m_movePriority[newIndexJ]) {
                 // swap
-                uint8_t temp = order[i];
+                int8_t temp = order[i];
                 order[i] = order[j];
                 order[j] = temp;
             }
@@ -171,24 +171,24 @@ vec2<double> MazeSolver::cmToPos(const vec2<double>& cm) const {
     );
 }
 
-vec2<int> MazeSolver::roundPos(const vec2<double>& pos) const {
+vec2<int8_t> MazeSolver::roundPos(const vec2<double>& pos) const {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
 
-    return vec2<int>{(int)round(pos.x), (int)round(pos.y)};
+    return vec2<int8_t>{(int8_t)round(pos.x), (int8_t)round(pos.y)};
 }
 
-vec2<int> MazeSolver::posToPosEx(const vec2<double>& pos) const {
+vec2<int8_t> MazeSolver::posToPosEx(const vec2<double>& pos) const {
     assert(pos.x >= -0.5 && pos.y >= -0.5);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
 
-    return vec2<int>(
+    return vec2<int8_t>(
         round(pos.x * 2. + 1.),
         round(pos.y * 2. + 1.)
     );
 }
 
-vec2<double> MazeSolver::posExToPos(const vec2<int>& posEx) const {
+vec2<double> MazeSolver::posExToPos(const vec2<int8_t>& posEx) const {
     assert(posEx.x >= 0 && posEx.y >= 0);
     assert(posEx.x < m_mazeWidthEx && posEx.y < m_mazeHeightEx);    
 
@@ -212,11 +212,11 @@ void MazeSolver::setCurrPos(const vec2<double>& pos) {
     m_visitedMatrix[posR.x][posR.y] = 1;
 }
 
-const vec2<int>& MazeSolver::getStartPos() const {
+const vec2<int8_t>& MazeSolver::getStartPos() const {
     return m_startPos;
 } 
 
-const vec2<int>& MazeSolver::getEndPos() const {
+const vec2<int8_t>& MazeSolver::getEndPos() const {
     return m_endPos;
 }
 
@@ -236,7 +236,7 @@ void MazeSolver::markWall(const vec2 <double>& pos, double distance, CompassDir 
     //setCurrPos(pos);
 
     vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance, distance }*getDirOffset(dir));
-    vec2<int> wallPosEx = posToPosEx(cmToPos(wallPosCm));
+    vec2<int8_t> wallPosEx = posToPosEx(cmToPos(wallPosCm));
 
     // walls are only on even spots
     if (!(wallPosEx.x % 2 == 0 || wallPosEx.y % 2 == 0))
@@ -260,7 +260,7 @@ void MazeSolver::markWall(const vec2<double>& pos, double distance, double angle
     //setCurrPos(pos);
 
     vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance*sin(angleRad), distance*cos(angleRad) });
-    vec2<int> wallPosEx = posToPosEx(cmToPos(wallPosCm));
+    vec2<int8_t> wallPosEx = posToPosEx(cmToPos(wallPosCm));
 
     // walls are only on even spots
     if (!(wallPosEx.x % 2 == 0 || wallPosEx.y % 2 == 0))
@@ -277,8 +277,8 @@ void MazeSolver::floodFill(FixedDeque<FloodFillNode>& queue) {
     while (!(queue.is_empty())) {
         FloodFillNode node = queue.pop_front();
 
-        for (vec2<int> dir : m_directions) {
-            vec2<int> newPos = node.pos + dir;
+        for (vec2<int8_t> dir : m_directions) {
+            vec2<int8_t> newPos = node.pos + dir;
 
             // Skip OOB
             if (newPos.x < 0 || newPos.y < 0 || newPos.x >= m_mazeWidth || newPos.y >= m_mazeHeight)
@@ -288,16 +288,15 @@ void MazeSolver::floodFill(FixedDeque<FloodFillNode>& queue) {
             if (m_distanceMatrix[newPos.x][newPos.y] != -1)
                 continue;
 
-            vec2<int> newPosEx = posToPosEx(newPos);
-            vec2<int> wallPos = newPosEx - dir; // step back
+            vec2<int8_t> newPosEx = posToPosEx(newPos);
+            vec2<int8_t> wallPos = newPosEx - dir; // step back
 
             // Can't drive through walls
             if (m_wallMatrix[wallPos.x][wallPos.y] == 1)
                 continue;
 
             m_distanceMatrix[newPos.x][newPos.y] = node.dist + 1;
-
-            queue.push_back({ newPos, node.dist + 1 });
+            queue.push_back({ newPos, (int16_t)(node.dist + 1) });
         }
     }   
 }
@@ -306,14 +305,13 @@ void MazeSolver::floodFill(FixedDeque<FloodFillNode>& queue) {
 void MazeSolver::floodFillUnvisited() {
     clearDistanceMatrix();
     FixedDeque<FloodFillNode> queue(m_mazeWidth*m_mazeHeight);
-    for (int x = 0; x < m_mazeWidth; x++) {
-        for (int y = 0; y < m_mazeHeight; y++) {
+    for (int8_t x = 0; x < m_mazeWidth; x++) {
+        for (int8_t y = 0; y < m_mazeHeight; y++) {
            if (m_visitedMatrix[x][y])
                continue;
 
            queue.push_back({{x,y}, 0});
            m_distanceMatrix[x][y] = 0;
-
         }
     }
 
@@ -324,8 +322,8 @@ void MazeSolver::floodFillBorders() {
     clearDistanceMatrix();
     FixedDeque<FloodFillNode> queue(m_mazeWidth * m_mazeHeight);
 
-    for (int x = m_topLeft.x; x <= m_bottomRight.x; ++x) {
-        for (int y = m_topLeft.y; y <= m_bottomRight.y; ++y) {
+    for (int8_t x = m_topLeft.x; x <= m_bottomRight.x; ++x) {
+        for (int8_t y = m_topLeft.y; y <= m_bottomRight.y; ++y) {
             // Skip non-boundary cells
             if (x != m_topLeft.x && x != m_bottomRight.x && y != m_topLeft.y && y != m_bottomRight.y)
                 continue;
@@ -333,7 +331,7 @@ void MazeSolver::floodFillBorders() {
             if (m_currPos.x == x && m_currPos.y == y) {
                 m_atExit = true;
             }
-            vec2<int> posEx = posToPosEx(vec2<int>{x, y});
+            vec2<int8_t> posEx = posToPosEx(vec2<int8_t>{x, y});
 
             if ((x == m_topLeft.x && m_wallMatrix[posEx.x - 1][posEx.y] != 1) ||  // Left
                 (x == m_bottomRight.x && m_wallMatrix[posEx.x + 1][posEx.y] != 1) || // Right
@@ -358,7 +356,7 @@ bool MazeSolver::atExit() {
     return m_atExit;
 }
 
-void MazeSolver::floodFill(const vec2<int>& destination) {
+void MazeSolver::floodFill(const vec2<int8_t>& destination) {
     clearDistanceMatrix();
     m_distanceMatrix[destination.x][destination.y] = 0;
 
@@ -368,22 +366,19 @@ void MazeSolver::floodFill(const vec2<int>& destination) {
     floodFill(queue);
 }
 
-vec2<int> MazeSolver::getDirOffset(CompassDir dir) const {
+vec2<int8_t> MazeSolver::getDirOffset(CompassDir dir) const {
     return m_directions[dirToIndex(dir)];
 }
 
 double MazeSolver::directionToRadians(CompassDir dir) const {
-    if (dir == North)
-        return 0.;
-    if (dir == South)
-        return PI_d;
     if (dir == East)
         return 0.5*PI_d;
     if (dir == West)
         return 1.5*PI_d;
-
-    assert(0);
-    return INVALID_ANGLE;
+    if (dir == South)
+        return PI_d;
+    // North
+    return 0.;
 }
 
 CompassDir MazeSolver::radiansToDirection(double angleRad) const {
@@ -397,8 +392,8 @@ CompassDir MazeSolver::radiansToDirection(double angleRad) const {
 }
 
 bool MazeSolver::findBounds() {
-    for (int x = 0; x < m_mazeWidthEx; x++) {
-        for (int y = 0; y < m_mazeWidthEx; y++) {
+    for (int8_t x = 0; x < m_mazeWidthEx; x++) {
+        for (int8_t y = 0; y < m_mazeWidthEx; y++) {
             if (m_wallMatrix[x][y] != 1)
                 continue;
 
@@ -414,13 +409,13 @@ bool MazeSolver::findBounds() {
             
             // right
             if (wallPos.x > m_bottomRight.x && (m_currPos.x < wallPos.x))
-                m_bottomRight.x = (int)wallPos.x; // round down
+                m_bottomRight.x = (int8_t)wallPos.x; // round down
             
             // bottom
             if (wallPos.y > m_bottomRight.y && (m_currPos.y < wallPos.y))
-                m_bottomRight.y = (int)wallPos.y; // round down
+                m_bottomRight.y = (int8_t)wallPos.y; // round down
             
-            if (m_bottomRight.x == -1 || m_bottomRight.y == -1 || m_topLeft.x == 999 || m_topLeft.y == 999)
+            if (m_bottomRight.x == -1 || m_bottomRight.y == -1 || m_topLeft.x == 127 || m_topLeft.y == 127)
                 continue;
 
             if (((m_bottomRight.x - m_topLeft.x + 1) >= ((m_mazeWidth + 1) / 2)) &&
@@ -434,9 +429,9 @@ bool MazeSolver::findBounds() {
     return false;
 }
 
-vec2<int> MazeSolver::getNextMove(double carBearing) {
-    static vec2<int> lastMove = roundPos(m_currPos);
-    static uint8_t recursionCount = 0;
+vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
+    static vec2<int8_t> lastMove = roundPos(m_currPos);
+    static int8_t recursionCount = 0;
     
     if (m_blind) {
         if (m_blindStage == Stage::BOUND_SEARCH) {
@@ -460,8 +455,8 @@ vec2<int> MazeSolver::getNextMove(double carBearing) {
 
     directionFlags moves = getPossibleMoves();
 
-    uint8_t orderSize;
-    uint8_t* order = getMovesOrder(moves, &orderSize, carBearing); 
+    int8_t orderSize;
+    int8_t* order = getMovesOrder(moves, &orderSize, carBearing); 
     
     if (orderSize == 0) {
         clearWallMatrix();
@@ -473,18 +468,17 @@ vec2<int> MazeSolver::getNextMove(double carBearing) {
     }
     recursionCount = 0;
 
-    vec2<int> bestMove{ -1 };
-    int bestDist = 9999;
+    vec2<int8_t> bestMove{ -1 };
+    int16_t bestDist = 9999;
     
-    for (int i = 0; i < orderSize; i++) {
+    for (int8_t i = 0; i < orderSize; i++) {
         CompassDir dir = (CompassDir)(moves & (1 << order[i]));
-
-        vec2<int> newPos = roundPos(m_currPos) + getDirOffset(dir);
+        vec2<int8_t> newPos = roundPos(m_currPos) + getDirOffset(dir);
 
         if (newPos == lastMove)
             continue;
 
-        int dist = m_distanceMatrix[newPos.x][newPos.y];
+        int16_t dist = m_distanceMatrix[newPos.x][newPos.y];
         bool visited = m_visitedMatrix[newPos.x][newPos.y]; 
 
         if (!m_explorationMode && !visited)
@@ -508,8 +502,9 @@ vec2<int> MazeSolver::getNextMove(double carBearing) {
 
 directionFlags MazeSolver::getPossibleMoves() const {
     directionFlags out = 0;
-    for (int i = 0; i < 4; i++) {
-        vec2<int> wallPos = posToPosEx(m_currPos) + m_directions[i];
+    vec2<int8_t> posEx = posToPosEx(m_currPos);
+    for (int8_t i = 0; i < 4; i++) {
+        vec2<int8_t> wallPos = posEx + m_directions[i];
         if (m_wallMatrix[wallPos.x][wallPos.y] == 1)
             continue;
 
@@ -522,11 +517,11 @@ directionFlags MazeSolver::getPossibleMoves() const {
 
 void MazeSolver::printWalls() const {
 #ifdef DEBUG
-    for (int y = 0; y < m_mazeHeightEx; y++) {
-        for (int x = 0; x < m_mazeWidthEx; x++) {
+    for (int8_t y = 0; y < m_mazeHeightEx; y++) {
+        for (int8_t x = 0; x < m_mazeWidthEx; x++) {
             // part of normal grid
             if (x % 2 != 0 && y % 2 != 0) {
-                vec2<int> pos = posExToPos({x,y});
+                vec2<int8_t> pos = posExToPos({x,y});
                 if (m_visitedMatrix[pos.x][pos.y]) {
                     std::cout << "+ ";
                     continue;
@@ -563,8 +558,8 @@ void MazeSolver::printWalls() const {
 
 void MazeSolver::printDists() const {
 #ifdef DEBUG
-    for (int y = 0; y < m_mazeHeight; y++) {
-        for (int x = 0; x < m_mazeWidth; x++) {
+    for (int8_t y = 0; y < m_mazeHeight; y++) {
+        for (int8_t x = 0; x < m_mazeWidth; x++) {
             std::cout << std::setw(3) << (int)(m_distanceMatrix[x][y]) << " ";
         }
         std::cout << "\n";
