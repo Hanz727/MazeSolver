@@ -79,14 +79,13 @@ private:
     void floodFillUnvisited();
 
     bool findBounds();
-    int8_t dirToIndex(CompassDir dir) const;
+    CompassDir radiansToDirection(double angleRad) const;
+    double directionToRadians(CompassDir dir) const;
 private:
     vec2<double> posToCm(const vec2<double>& pos) const;
     vec2<double> cmToPos(const vec2<double>& cm) const;
     vec2<int8_t> roundPos(const vec2<double>& pos) const;
-
-    CompassDir radiansToDirection(double angleRad) const;
-    double directionToRadians(CompassDir dir) const;
+    int8_t dirToIndex(CompassDir dir) const;
 
     // This is int because this function is only used to get the wall position which must be int.
     // So it rounds to the nearest wall
