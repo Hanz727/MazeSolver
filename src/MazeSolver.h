@@ -79,8 +79,6 @@ private:
     void floodFillUnvisited();
 
     bool findBounds();
-    CompassDir radiansToDirection(double angleRad) const;
-    double directionToRadians(CompassDir dir) const;
 private:
     vec2<double> posToCm(const vec2<double>& pos) const;
     vec2<double> cmToPos(const vec2<double>& cm) const;
@@ -126,6 +124,9 @@ public:
     const vec2<double>& getCurrPos() const; 
     const vec2<int8_t>& getEndPos() const; 
     bool atExit();
+
+    CompassDir radiansToDirection(double angleRad) const;
+    double directionToRadians(CompassDir dir) const;
 
     void markWall(const vec2<double>& pos, double distance, CompassDir dir);
     void markWall(const vec2<double>& pos, double distance, double angleRad);
