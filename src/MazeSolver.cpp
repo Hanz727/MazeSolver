@@ -85,7 +85,7 @@ vec2<int8_t> MazeSolver::projectPos(const vec2<double>& pos, double distance, do
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);
     assert(distance > 0);
-    return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*sin(angleRad), distance*cos(angleRad)}));
+    return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*cos(angleRad), distance*sin(angleRad)}));
 }
 
 void MazeSolver::setMovePriority(int8_t priority[4]) {
@@ -259,7 +259,7 @@ void MazeSolver::markWall(const vec2<double>& pos, double distance, double angle
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
     //setCurrPos(pos);
 
-    vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance*sin(angleRad), distance*cos(angleRad) });
+    vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance*cos(angleRad), distance*sin(angleRad) });
     vec2<int8_t> wallPosEx = posToPosEx(cmToPos(wallPosCm));
 
     // walls are only on even spots
@@ -270,7 +270,6 @@ void MazeSolver::markWall(const vec2<double>& pos, double distance, double angle
         return;
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
-
 }
 
 void MazeSolver::floodFill(FixedDeque<FloodFillNode>& queue) {
