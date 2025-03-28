@@ -128,8 +128,8 @@ public:
     CompassDir radiansToDirection(double angleRad) const;
     double directionToRadians(CompassDir dir) const;
 
-    void markWall(const vec2<double>& pos, double distance, CompassDir dir);
-    void markWall(const vec2<double>& pos, double distance, double angleRad);
+    bool markWall(const vec2<double>& pos, double distance, CompassDir dir);
+    bool markWall(const vec2<double>& pos, double distance, double angleRad);
     void floodFill(const vec2<int8_t>& destination);
 
     vec2<int8_t> getDirOffset(CompassDir dir) const;

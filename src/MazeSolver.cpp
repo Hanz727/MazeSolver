@@ -85,7 +85,7 @@ vec2<int8_t> MazeSolver::projectPos(const vec2<double>& pos, double distance, do
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);
     assert(distance > 0);
-    return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*cos(angleRad), distance*sin(angleRad)}));
+    return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*sin(angleRad), distance*cos(angleRad)}));
 }
 
 void MazeSolver::setMovePriority(int8_t priority[4]) {
@@ -230,7 +230,7 @@ const vec2<double>& MazeSolver::getCurrPos() const {
 //   to calculate the position of the wall based on the direction.
 // - dir: The direction from the current position in which the wall is located, 
 //   represented by the CompassDir enum (e.g., North, South, East, West). Where north goes towards y = 0 and West goes to x = 0
-void MazeSolver::markWall(const vec2 <double>& pos, double distance, CompassDir dir) {
+bool MazeSolver::markWall(const vec2 <double>& pos, double distance, CompassDir dir) {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
     //setCurrPos(pos);
@@ -240,12 +240,13 @@ void MazeSolver::markWall(const vec2 <double>& pos, double distance, CompassDir 
 
     // walls are only on even spots
     if (!(wallPosEx.x % 2 == 0 || wallPosEx.y % 2 == 0))
-        return;
+        return false;
 
     if (wallPosEx.x < 0 || wallPosEx.y < 0)
-        return;
+        return false;
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
+    return true;
 }
 
 // Parameters:
@@ -254,22 +255,24 @@ void MazeSolver::markWall(const vec2 <double>& pos, double distance, CompassDir 
 //   to calculate the position of the wall based on the direction.
 // - angleRad: The compass angle from the center of the car, 0 is North, 1/2pi is East, pi is South, 3/2pi is West. 
 //             The angle is not relative to the car!
-void MazeSolver::markWall(const vec2<double>& pos, double distance, double angleRad) {
+bool MazeSolver::markWall(const vec2<double>& pos, double distance, double angleRad) {
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);    
     //setCurrPos(pos);
 
-    vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance*cos(angleRad), distance*sin(angleRad) });
+    vec2<double> wallPosCm = posToCm(pos) + (vec2<double>{ distance*sin(angleRad), distance*cos(angleRad-PI_d) });
     vec2<int8_t> wallPosEx = posToPosEx(cmToPos(wallPosCm));
 
     // walls are only on even spots
     if (!(wallPosEx.x % 2 == 0 || wallPosEx.y % 2 == 0))
-        return;
+        return false;
 
     if (wallPosEx.x < 0 || wallPosEx.y < 0)
-        return;
+        return false;
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
+    Serial2.println("Marked: " + String(wallPosEx.x) + " " + String(wallPosEx.y));
+    return true;
 }
 
 void MazeSolver::floodFill(FixedDeque<FloodFillNode>& queue) {
