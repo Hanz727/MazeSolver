@@ -85,7 +85,7 @@ vec2<int8_t> MazeSolver::projectPos(const vec2<double>& pos, double distance, do
     assert(pos.x >= 0 && pos.y >= 0);
     assert(pos.x < m_mazeWidth && pos.y < m_mazeHeight);
     assert(distance > 0);
-    return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*sin(angleRad), distance*cos(angleRad)}));
+    return roundPos(cmToPos(posToCm(pos) + vec2<double>{distance*sin(angleRad), distance*cos(angleRad - PI_d)}));
 }
 
 void MazeSolver::setMovePriority(int8_t priority[4]) {
@@ -271,7 +271,11 @@ bool MazeSolver::markWall(const vec2<double>& pos, double distance, double angle
         return false;
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
-    Serial2.println("Marked: " + String(wallPosEx.x) + " " + String(wallPosEx.y));
+
+#ifndef DEBUG
+    //Serial2.println("Marked: " + String(wallPosEx.x) + " " + String(wallPosEx.y));
+#endif
+
     return true;
 }
 
