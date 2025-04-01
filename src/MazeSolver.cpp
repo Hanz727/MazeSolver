@@ -224,6 +224,10 @@ const vec2<double>& MazeSolver::getCurrPos() const {
     return m_currPos;
 } 
 
+matrix2d* MazeSolver::getVisitedMatrix() {
+    return &m_visitedMatrix;
+}
+
 // Parameters:
 // - pos: The current position in the maze grid, represented as a vec2<double>. The more precise the position the better.
 // - distance: The distance to the wall in centimeters (double). This value is used
@@ -271,6 +275,7 @@ bool MazeSolver::markWall(const vec2<double>& pos, double distance, double angle
         return false;
 
     m_wallMatrix[wallPosEx.x][wallPosEx.y] = 1;
+
 
 #ifndef DEBUG
     //Serial2.println("Marked: " + String(wallPosEx.x) + " " + String(wallPosEx.y));

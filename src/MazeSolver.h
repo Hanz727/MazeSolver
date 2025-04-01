@@ -53,9 +53,9 @@ private:
 
     // Priority, Lower number = higher priority
     int8_t m_movePriority[4] = {
-        1, // N
+        0, // N
         3, // S
-        0, // E
+        1, // E
         2, // W
     };
 
@@ -123,6 +123,7 @@ public:
     const vec2<int8_t>& getStartPos() const; 
     const vec2<double>& getCurrPos() const; 
     const vec2<int8_t>& getEndPos() const; 
+    matrix2d* getVisitedMatrix();
     bool atExit();
 
     CompassDir radiansToDirection(double angleRad) const;

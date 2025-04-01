@@ -53,13 +53,13 @@ struct vec2 {
 
     template <typename U>
     bool operator==(const vec2<U>& other) const {
-        const double tolerance = 1e-9;
+        const double tolerance = 1e-4;
         return (fabs(x - other.x) < tolerance) && (fabs(y - other.y) < tolerance);
     }
 
     template <typename U>
     bool operator!=(const vec2<U>& other) const {
-        const double tolerance = 1e-9;
+        const double tolerance = 1e-4;
         return (fabs(x - other.x) >= tolerance) || (fabs(y - other.y) >= tolerance);
     }
 
