@@ -4,6 +4,7 @@
 #include "pch.h"
 
 #define PI_d 3.141592653589793
+#define INVALID_VECTOR vec2<int8_t>{-69, -69}
 
 // Max maze size is fixed on 10 by 10
 using matrix2d = int8_t[10*2-1][10*2-1];
@@ -129,8 +130,8 @@ public:
     CompassDir radiansToDirection(double angleRad) const;
     double directionToRadians(CompassDir dir) const;
 
-    bool markWall(const vec2<double>& pos, double distance, CompassDir dir);
-    bool markWall(const vec2<double>& pos, double distance, double angleRad);
+    vec2<int8_t> markWall(const vec2<double>& pos, double distance, CompassDir dir);
+    vec2<int8_t> markWall(const vec2<double>& pos, double distance, double angleRad);
     void floodFill(const vec2<int8_t>& destination);
 
     vec2<int8_t> getDirOffset(CompassDir dir) const;
