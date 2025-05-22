@@ -15,10 +15,6 @@ int main() {
 	    true
     );
 
-    mazeSolver.markWall({ 6-3,6-3 }, 10, CompassDir::North); 
-    mazeSolver.markWall({ 6-3,6+3 }, 10, CompassDir::South); 
-    mazeSolver.markWall({ 6-3,6-3 }, 10, CompassDir::West); 
-    mazeSolver.markWall({ 6+3,6 }, 10, CompassDir::East); 
         
     //uint8_t orderCount;
     //uint8_t* order = mazeSolver.getMovesOrder(15, &orderCount, 0.5*PI_d);
@@ -27,14 +23,37 @@ int main() {
     //}
     //delete[] order;
 
-    int steps = 10;
+    mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::East); 
+    mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::West); 
+
+    int steps = 13;
     double angle = 0.;
     for (int i = 0; i < steps; i++) {
 	    vec2<int> nm = mazeSolver.getNextMove(angle);
-        
+
         //std::cout << "pos: (" << mazeSolver.getCurrPos().x << ", " << mazeSolver.getCurrPos().y << ") nextPos: (" << nm.x << ", " << nm.y << ") angle: " << angle << " at exit: " << mazeSolver.atExit() << "\n";
         angle = atan2(nm.y-mazeSolver.getCurrPos().y, nm.x-mazeSolver.getCurrPos().x) + 0.5*PI_d;
         mazeSolver.setCurrPos(nm);
+        if (i < 5) {
+            mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::East); 
+            mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::West); 
+        }
+
+        if (i == 5) {
+            mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::East); 
+            mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::North); 
+        }
+
+        if (i > 5 && i != 11) {
+            mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::North); 
+            mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::South); 
+        }
+        
+        if (i == 11) {
+            mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::West); 
+            mazeSolver.markWall(mazeSolver.getCurrPos(), 10, CompassDir::North); 
+        }
+
     }
     
     mazeSolver.printDists();

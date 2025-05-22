@@ -412,11 +412,11 @@ bool MazeSolver::findBounds() {
 
             // left
             if (wallPos.x < m_topLeft.x && (m_currPos.x > wallPos.x))
-                m_topLeft.x = round(wallPos.x);
+                m_topLeft.x = round(wallPos.x+0.1);
             
             // up
             if (wallPos.y < m_topLeft.y && (m_currPos.y > wallPos.y)) 
-                m_topLeft.y = round(wallPos.y);
+                m_topLeft.y = round(wallPos.y+0.1);
             
             // right
             if (wallPos.x > m_bottomRight.x && (m_currPos.x < wallPos.x))
