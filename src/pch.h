@@ -12,7 +12,7 @@ static bool _assert_handler(const char* expr, const char* file, int line) {
 #ifdef DEBUG
     std::cout << "Assertion failed: " << expr << " at: " << file << ":" << line << "\n";
 #else
-    Serial.println("Assertion failed: " + String(expr) + " at: " + String(file) + ":" + String(line));
+    Serial2.println("Assertion failed: " + String(expr) + " at: " + String(file) + ":" + String(line));
 #endif
     return 0;
 }

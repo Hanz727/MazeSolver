@@ -7,9 +7,9 @@
 #define INVALID_VECTOR vec2<int8_t>{-69, -69}
 
 // Max maze size is fixed on 10 by 10
-using matrix2d = int8_t[10*2-1][10*2-1];
-using matrix2dBig = int16_t[10*2-1][10*2-1];
-using matrix2dEx = int8_t[10*4-1][10*4-1];
+using matrix2d = int8_t[8*2-1][8*2-1];
+using matrix2dBig = int16_t[8*2-1][8*2-1];
+using matrix2dEx = int8_t[8*4-1][8*4-1];
 
 using directionFlags = uint8_t;
 

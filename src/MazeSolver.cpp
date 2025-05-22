@@ -485,7 +485,6 @@ vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
     for (int8_t i = 0; i < orderSize; i++) {
         CompassDir dir = (CompassDir)(moves & (1 << order[i]));
         vec2<int8_t> newPos = roundPos(m_currPos) + getDirOffset(dir);
-
         if (newPos == lastMove)
             continue;
 
