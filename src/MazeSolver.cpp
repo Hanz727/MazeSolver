@@ -443,6 +443,10 @@ bool MazeSolver::findBounds() {
 vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
     static vec2<int8_t> lastMove = roundPos(m_currPos);
     static int8_t recursionCount = 0;
+
+    if (m_currPos.x == m_endPos.x && m_currPos.y == m_endPos.y) {
+        m_atExit = true;
+    }
     
     if (m_blind) {
         if (m_blindStage == Stage::BOUND_SEARCH) {
@@ -458,10 +462,11 @@ vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
         if (m_blindStage == Stage::EXIT_SEARCH) {
             floodFillBorders();
 
-            if (atExit()) {
-                return m_currPos;
-            }
         } 
+    }
+
+    if (atExit()) {
+        return m_currPos;
     }
 
     directionFlags moves = getPossibleMoves();
@@ -477,6 +482,7 @@ vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
             return getNextMove(carBearing);
         }
     }
+
     recursionCount = 0;
 
     vec2<int8_t> bestMove{ -1 };
