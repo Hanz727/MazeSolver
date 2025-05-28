@@ -342,6 +342,7 @@ void MazeSolver::floodFillBorders() {
             if (m_currPos.x == x && m_currPos.y == y) {
                 m_atExit = true;
             }
+
             vec2<int8_t> posEx = posToPosEx(vec2<int8_t>{x, y});
 
             if ((x == m_topLeft.x && m_wallMatrix[posEx.x - 1][posEx.y] != 1) ||  // Left
@@ -465,10 +466,6 @@ vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
         } 
     }
 
-    if (atExit()) {
-        return m_currPos;
-    }
-
     directionFlags moves = getPossibleMoves();
 
     int8_t orderSize;
@@ -494,6 +491,12 @@ vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
         if (newPos == lastMove)
             continue;
 
+        // ensure OOB is finish
+        if (newPos.x < 0 || newPos.y < 0 || newPos.x > m_mazeWidth-1 || newPos.y > m_mazeHeight-1) {
+            m_atExit = true;
+            break;
+        }
+
         int16_t dist = m_distanceMatrix[newPos.x][newPos.y];
         bool visited = m_visitedMatrix[newPos.x][newPos.y]; 
 
@@ -511,7 +514,11 @@ vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
         bestMove = lastMove;
 
     delete[] order;
-    
+
+    if (atExit()) {
+        return m_currPos;
+    }   
+
     lastMove = bestMove;
     return bestMove;
 }
