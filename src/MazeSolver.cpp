@@ -484,12 +484,15 @@ vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
 
     vec2<int8_t> bestMove{ -1 };
     int16_t bestDist = 9999;
+    bool lastPossible = false;
     
     for (int8_t i = 0; i < orderSize; i++) {
         CompassDir dir = (CompassDir)(moves & (1 << order[i]));
         vec2<int8_t> newPos = roundPos(m_currPos) + getDirOffset(dir);
-        if (newPos == lastMove)
+        if (newPos == lastMove) {
+            lastPossible = true;
             continue;
+        }
 
         // ensure OOB is finish
         if (newPos.x < 0 || newPos.y < 0 || newPos.x > m_mazeWidth-1 || newPos.y > m_mazeHeight-1) {
@@ -510,7 +513,7 @@ vec2<int8_t> MazeSolver::getNextMove(double carBearing) {
     }
 
     // Check previous move as last
-    if (m_distanceMatrix[lastMove.x][lastMove.y] < bestDist)
+    if (lastPossible && m_distanceMatrix[lastMove.x][lastMove.y] < bestDist)
         bestMove = lastMove;
 
     delete[] order;
